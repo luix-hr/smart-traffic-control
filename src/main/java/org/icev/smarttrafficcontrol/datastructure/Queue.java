@@ -33,6 +33,13 @@ public class Queue<T> {
         }
     }
 
+    public T peek() {
+        if (head == null) {
+            throw new IllegalArgumentException("Fila vazia");
+        }
+        return head.getData();
+    }
+
 
     public void print(){
         Node actual = head;

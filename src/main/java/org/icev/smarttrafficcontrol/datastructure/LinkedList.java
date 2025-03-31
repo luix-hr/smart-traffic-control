@@ -40,7 +40,21 @@ public class LinkedList<T> {
         size++;
     }
 
-    //Overload
+    public void insertLast(T data) {
+        Node<T> newNode = new Node<>(data);
+        if (head == null) {
+            head = newNode;
+        } else {
+            Node<T> actual = head;
+            while (actual.getNext() != null) {
+                actual = actual.getNext();
+            }
+            actual.setNext(newNode);
+        }
+        size++;
+    }
+
+
     public void insert(final T data){
         Node newNode = new Node<T>(data);
 
@@ -54,20 +68,29 @@ public class LinkedList<T> {
         size++;
     }
 
-    public T remove(T data){
-        if(head == null){
-            throw new IllegalArgumentException("Lista vazia");
-        }
-        if(head.getData() == data){
-            T dataRemoved = head.getData();
+    public boolean remove(T data) {
+        if (isEmpty()) return false;
+
+        if (head.getData().equals(data)) {
             head = head.getNext();
-            if (head == null) tail = null;
             size--;
-            return dataRemoved;
+            return true;
         }
 
-        //falta terminar a logica
+        Node<T> actual = head;
+        while (actual.getNext() != null && !actual.getNext().getData().equals(data)) {
+            actual = actual.getNext();
+        }
 
+        if (actual.getNext() == null) return false;
+
+        actual.setNext(actual.getNext().getNext());
+        size--;
+        return true;
+    }
+
+    public Node<T> getHead() {
+        return head;
     }
 
     public int size(){

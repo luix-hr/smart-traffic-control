@@ -1,21 +1,25 @@
 package org.icev.smarttrafficcontrol;
 
+import org.icev.smarttrafficcontrol.datastructure.Deck;
 import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.Queue;
 
 public class Main {
     public static void main(String[] args) {
 
-        Queue fila = new Queue();
+        Deck fila = new Deck();
 
-        fila.enqueue(10);
-        fila.enqueue(20);
-        fila.enqueue(30);
-        fila.enqueue(40);
-        fila.enqueue(50);
+        fila.addFront(10);
+        fila.addFront(20);
+        fila.addFront(30);
+        fila.addFront(40);
+        fila.addFront(50);
 
         fila.print();
 
+        fila.rotation(-2);
+
+        fila.print();
 
 
 
