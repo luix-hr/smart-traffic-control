@@ -19,5 +19,37 @@ public class Graph<T> {
         return null;
     }
 
+    public void insertVertex(T data) {
+        if (getNode(data) == null) {
+            nodes.insertLast(new GraphNode<>(data));
+        }
+    }
+
+    public void insertEdge(T source, T destination, double weight) {
+        GraphNode<T> sourceNode = getNode(source);
+        GraphNode<T> destinationNode = getNode(destination);
+
+        if (sourceNode == null || destinationNode == null) {
+            throw new IllegalArgumentException("Vértices não encontrados");
+        }
+
+        sourceNode.insertEdge(destinationNode, weight);
+        destinationNode.insertEdge(sourceNode, weight);
+    }
+
+    public void print() {
+        Node<GraphNode> current = nodes.getHead();
+        while (current != null) {
+            System.out.print(current.getData().getData() + " -> ");
+            Node<Edge> edgeNode = current.getData().getAdjacentNodes().getHead();
+            while (edgeNode != null) {
+                System.out.print("[" + edgeNode.getData().getDestination().getData() + " (" + edgeNode.getData().getWeight() + ")] ");
+                edgeNode = edgeNode.getNext();
+            }
+            System.out.println();
+            current = current.getNext();
+        }
+    }
+
 
 }

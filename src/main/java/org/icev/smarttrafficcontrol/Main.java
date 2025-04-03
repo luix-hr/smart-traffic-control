@@ -1,25 +1,26 @@
 package org.icev.smarttrafficcontrol;
 
 import org.icev.smarttrafficcontrol.datastructure.Deck;
+import org.icev.smarttrafficcontrol.datastructure.Graph;
 import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.Queue;
 
 public class Main {
     public static void main(String[] args) {
 
-        Deck fila = new Deck();
+        Graph<String> cityMap = new Graph<>();
 
-        fila.addFront(10);
-        fila.addFront(20);
-        fila.addFront(30);
-        fila.addFront(40);
-        fila.addFront(50);
+        cityMap.insertVertex("A");
+        cityMap.insertVertex("B");
+        cityMap.insertVertex("C");
+        cityMap.insertVertex("D");
 
-        fila.print();
+        cityMap.insertEdge("A", "B", 2.5);
+        cityMap.insertEdge("A", "C", 1.0);
+        cityMap.insertEdge("B", "D", 3.0);
+        cityMap.insertEdge("C", "D", 4.5);
 
-        fila.rotation(-2);
-
-        fila.print();
+        cityMap.print();
 
 
 

@@ -119,4 +119,11 @@ public class LinkedList<T> {
         System.out.println("null");
     }
 
+    public Node removeFirst() {
+        if (head == null) throw new IllegalArgumentException("Lista vazia");
+        Node<T> temp = head;
+        head = head.getNext();
+        temp.setNext(null);
+        return temp;
+    }
 }
