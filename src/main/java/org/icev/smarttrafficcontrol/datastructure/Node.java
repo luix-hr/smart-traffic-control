@@ -1,6 +1,9 @@
 package org.icev.smarttrafficcontrol.datastructure;
 
-public class Node<T> {
+import java.io.Serializable;
+
+public class Node<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private T data;
     private Node<T> next;
     private Node<T> prev;

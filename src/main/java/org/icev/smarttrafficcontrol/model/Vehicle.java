@@ -1,31 +1,27 @@
 package org.icev.smarttrafficcontrol.model;
 
-public class Vehicle {
-    private String placa;
-    private double speed;
+import java.io.Serializable;
 
-    public Vehicle(String placa, double speed) {
-        this.placa = placa;
-        this.speed = speed;
+public class Vehicle implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String plate;
+    private Road currentRoad;
+
+    public Vehicle(String plate, Road currentRoad) {
+        this.plate = plate;
+        this.currentRoad = currentRoad;
     }
 
-    public String getPlaca() {
-        return placa;
+    public String getPlate() {
+        return plate;
     }
 
-    public double getSpeed() {
-        return speed;
+    public Road getCurrentRoad() {
+        return currentRoad;
     }
 
-    public void setSpeed(double speed) {
-        this.speed = speed;
-    }
-
-    @Override
-    public String toString() {
-        return "Vehicle{" +
-                "plate='" + placa + '\'' +
-                ", speed=" + speed +
-                '}';
+    public void setCurrentRoad(Road currentRoad) {
+        this.currentRoad = currentRoad;
     }
 }
+

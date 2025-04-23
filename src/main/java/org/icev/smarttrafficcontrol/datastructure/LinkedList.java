@@ -1,6 +1,9 @@
 package org.icev.smarttrafficcontrol.datastructure;
 
-public class LinkedList<T> {
+import java.io.Serializable;
+
+public class LinkedList<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Node<T> head;
     private Node<T> tail;
     private int size;
@@ -93,7 +96,7 @@ public class LinkedList<T> {
         return head;
     }
 
-    public int size(){
+    public int getSize(){
         return size;
     }
 
