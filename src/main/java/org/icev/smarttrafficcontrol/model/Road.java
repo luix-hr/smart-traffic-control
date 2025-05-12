@@ -7,7 +7,7 @@ public class Road implements Serializable {
     private String name;
     private Intersection from;
     private Intersection to;
-    private double weight; // pode representar tempo de viagem ou distância
+    private double weight;
 
     public Road(String name, Intersection from, Intersection to, double weight) {
         this.name = name;

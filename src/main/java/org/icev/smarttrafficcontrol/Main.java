@@ -1,11 +1,6 @@
 package org.icev.smarttrafficcontrol;
 
 import org.icev.smarttrafficcontrol.controller.Simulator;
-import org.icev.smarttrafficcontrol.datastructure.Deck;
-import org.icev.smarttrafficcontrol.datastructure.Graph;
-import org.icev.smarttrafficcontrol.datastructure.LinkedList;
-import org.icev.smarttrafficcontrol.datastructure.Queue;
-import org.icev.smarttrafficcontrol.model.City;
 import org.icev.smarttrafficcontrol.model.Intersection;
 import org.icev.smarttrafficcontrol.model.Road;
 

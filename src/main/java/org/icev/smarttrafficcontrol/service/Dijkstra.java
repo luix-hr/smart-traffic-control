@@ -1,120 +1,144 @@
 package org.icev.smarttrafficcontrol.service;
 
+import org.icev.smarttrafficcontrol.datastructure.graph.Edge;
+import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
+import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
 import org.icev.smarttrafficcontrol.datastructure.*;
 
 public class Dijkstra<T> {
 
-    public Queue<GraphNode<T>> findShortestPath(LinkedList<GraphNode<T>> vertices,
-                                                GraphNode<T> start,
-                                                GraphNode<T> end) {
+    public static Queue<Vertex> encontrarMenorCaminho(Graph grafo, Vertex origem, Vertex destino) {
+        LinkedList<Vertex> vertices = grafo.getVertices();
+        LinkedList<EntradaDistancia> distancias = new LinkedList<>();
+        LinkedList<EntradaAnterior> anteriores = new LinkedList<>();
 
-        LinkedList<DistanceEntry<T>> distances = new LinkedList<>();
-        LinkedList<PreviousEntry<T>> previous = new LinkedList<>();
-
-        Node<GraphNode<T>> current = vertices.getHead();
-        while (current != null) {
-            double initialDist = current.getData().equals(start) ? 0 : Double.POSITIVE_INFINITY;
-            distances.insert(new DistanceEntry<>(current.getData(), initialDist));
-            previous.insert(new PreviousEntry<>(current.getData(), null));
-            current = current.getNext();
+        Node<Vertex> atual = vertices.getHead();
+        while (atual != null) {
+            Vertex v = atual.getData();
+            double distInicial = v.equals(origem) ? 0 : Double.POSITIVE_INFINITY;
+            distancias.insert(new EntradaDistancia(v, distInicial));
+            anteriores.insert(new EntradaAnterior(v, null));
+            atual = atual.getNext();
         }
 
-        while (!allVisited(distances)) {
-            DistanceEntry<T> min = getMinDistance(distances);
-            if (min == null || min.node.equals(end)) break;
-            min.visited = true;
+        while (!todosVisitados(distancias)) {
+            EntradaDistancia min = encontrarMinimo(distancias);
+            if (min == null || min.vertice.equals(destino)) break;
+            min.visitado = true;
 
-            Node<Edge> edgeNode = min.node.getAdjacentNodes().getHead();
-            while (edgeNode != null) {
-                GraphNode<T> neighbor = edgeNode.getData().getDestination();
-                double newDist = min.distance + edgeNode.getData().getWeight();
-                DistanceEntry<T> neighborEntry = getEntry(distances, neighbor);
+            LinkedList<Edge> arestas = grafo.obterArestasDe(min.vertice);
+            Node<Edge> noAresta = arestas.getHead();
 
-                if (!neighborEntry.visited && newDist < neighborEntry.distance) {
-                    neighborEntry.distance = newDist;
-                    setPrevious(previous, neighbor, min.node);
+            while (noAresta != null) {
+                Edge aresta = noAresta.getData();
+                Vertex vizinho = aresta.getDestino();
+                EntradaDistancia entradaVizinho = buscar(distancias, vizinho);
+
+                double novaDist = min.distancia + aresta.getCusto();
+                if (!entradaVizinho.visitado && novaDist < entradaVizinho.distancia) {
+                    entradaVizinho.distancia = novaDist;
+                    atualizarAnterior(anteriores, vizinho, min.vertice);
                 }
-
-                edgeNode = edgeNode.getNext();
+                noAresta = noAresta.getNext();
             }
         }
 
-        return buildPath(previous, start, end);
+        return construirCaminho(anteriores, origem, destino);
     }
 
-    private boolean allVisited(LinkedList<DistanceEntry<T>> list) {
-        Node<DistanceEntry<T>> current = list.getHead();
-        while (current != null) {
-            if (!current.getData().visited) return false;
-            current = current.getNext();
+    private static boolean todosVisitados(LinkedList<EntradaDistancia> lista) {
+        Node<EntradaDistancia> atual = lista.getHead();
+        while (atual != null) {
+            if (!atual.getData().visitado) return false;
+            atual = atual.getNext();
         }
         return true;
     }
 
-    private DistanceEntry<T> getMinDistance(LinkedList<DistanceEntry<T>> list) {
-        Node<DistanceEntry<T>> current = list.getHead();
-        DistanceEntry<T> min = null;
+    private static EntradaDistancia encontrarMinimo(LinkedList<EntradaDistancia> lista) {
+        Node<EntradaDistancia> atual = lista.getHead();
+        EntradaDistancia min = null;
 
-        while (current != null) {
-            DistanceEntry<T> entry = current.getData();
-            if (!entry.visited && (min == null || entry.distance < min.distance)) {
-                min = entry;
+        while (atual != null) {
+            EntradaDistancia ed = atual.getData();
+            if (!ed.visitado && (min == null || ed.distancia < min.distancia)) {
+                min = ed;
             }
-            current = current.getNext();
+            atual = atual.getNext();
         }
         return min;
     }
 
-    private DistanceEntry<T> getEntry(LinkedList<DistanceEntry<T>> list, GraphNode<T> node) {
-        Node<DistanceEntry<T>> current = list.getHead();
-        while (current != null) {
-            if (current.getData().node.equals(node)) {
-                return current.getData();
+    private static EntradaDistancia buscar(LinkedList<EntradaDistancia> lista, Vertex vertice) {
+        Node<EntradaDistancia> atual = lista.getHead();
+        while (atual != null) {
+            if (atual.getData().vertice.equals(vertice)) {
+                return atual.getData();
             }
-            current = current.getNext();
+            atual = atual.getNext();
         }
         return null;
     }
 
-    private void setPrevious(LinkedList<PreviousEntry<T>> list, GraphNode<T> node, GraphNode<T> previousNode) {
-        Node<PreviousEntry<T>> current = list.getHead();
-        while (current != null) {
-            if (current.getData().node.equals(node)) {
-                current.getData().previous = previousNode;
+    private static void atualizarAnterior(LinkedList<EntradaAnterior> lista, Vertex vertice, Vertex anterior) {
+        Node<EntradaAnterior> atual = lista.getHead();
+        while (atual != null) {
+            if (atual.getData().vertice.equals(vertice)) {
+                atual.getData().anterior = anterior;
                 return;
             }
-            current = current.getNext();
+            atual = atual.getNext();
         }
     }
 
-    private Queue<GraphNode<T>> buildPath(LinkedList<PreviousEntry<T>> previous,
-                                          GraphNode<T> start,
-                                          GraphNode<T> end) {
+    private static Queue<Vertex> construirCaminho(LinkedList<EntradaAnterior> anteriores, Vertex origem, Vertex destino) {
+        Stack<Vertex> pilha = new Stack<>();
+        Queue<Vertex> caminho = new Queue<>();
 
-        Stack<GraphNode<T>> stack = new Stack<>();
-        Queue<GraphNode<T>> path = new Queue<>();
-
-        GraphNode<T> current = end;
-        while (current != null) {
-            stack.push(current);
-            current = getPreviousNode(previous, current);
+        Vertex atual = destino;
+        while (atual != null) {
+            pilha.push(atual);
+            atual = buscarAnterior(anteriores, atual);
         }
 
-        while (!stack.isEmpty()) {
-            path.enqueue(stack.pop());
+        while (!pilha.isEmpty()) {
+            caminho.enqueue(pilha.pop());
         }
 
-        return path;
+        return caminho;
     }
 
-    private GraphNode<T> getPreviousNode(LinkedList<PreviousEntry<T>> list, GraphNode<T> node) {
-        Node<PreviousEntry<T>> current = list.getHead();
-        while (current != null) {
-            if (current.getData().node.equals(node)) {
-                return current.getData().previous;
+    private static Vertex buscarAnterior(LinkedList<EntradaAnterior> lista, Vertex vertice) {
+        Node<EntradaAnterior> atual = lista.getHead();
+        while (atual != null) {
+            if (atual.getData().vertice.equals(vertice)) {
+                return atual.getData().anterior;
             }
-            current = current.getNext();
+            atual = atual.getNext();
         }
         return null;
+    }
+
+    // Classes auxiliares
+    private static class EntradaDistancia {
+        Vertex vertice;
+        double distancia;
+        boolean visitado;
+
+        EntradaDistancia(Vertex vertice, double distancia) {
+            this.vertice = vertice;
+            this.distancia = distancia;
+            this.visitado = false;
+        }
+    }
+
+    private static class EntradaAnterior {
+        Vertex vertice;
+        Vertex anterior;
+
+        EntradaAnterior(Vertex vertice, Vertex anterior) {
+            this.vertice = vertice;
+            this.anterior = anterior;
+        }
     }
 }
