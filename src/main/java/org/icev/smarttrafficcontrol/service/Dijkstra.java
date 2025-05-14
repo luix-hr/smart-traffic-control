@@ -1,44 +1,47 @@
 package org.icev.smarttrafficcontrol.service;
 
-import org.icev.smarttrafficcontrol.datastructure.graph.Edge;
-import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
-import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
+import org.icev.smarttrafficcontrol.datastructure.graph.*;
 import org.icev.smarttrafficcontrol.datastructure.*;
 
-public class Dijkstra<T> {
+import java.io.Serializable;
+
+public class Dijkstra implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public static Queue<Vertex> encontrarMenorCaminho(Graph grafo, Vertex origem, Vertex destino) {
-        LinkedList<Vertex> vertices = grafo.getVertices();
-        LinkedList<EntradaDistancia> distancias = new LinkedList<>();
-        LinkedList<EntradaAnterior> anteriores = new LinkedList<>();
+        LinkedList<Distancia> distancias = new LinkedList<>();
+        LinkedList<Anterior> anteriores = new LinkedList<>();
 
-        Node<Vertex> atual = vertices.getHead();
+        // Inicializa distâncias
+        Node<Vertex> atual = grafo.getVertices().getHead();
         while (atual != null) {
             Vertex v = atual.getData();
-            double distInicial = v.equals(origem) ? 0 : Double.POSITIVE_INFINITY;
-            distancias.insert(new EntradaDistancia(v, distInicial));
-            anteriores.insert(new EntradaAnterior(v, null));
+            double distanciaInicial = v.equals(origem) ? 0.0 : Double.POSITIVE_INFINITY;
+            distancias.insert(new Distancia(v, distanciaInicial));
+            anteriores.insert(new Anterior(v, null));
             atual = atual.getNext();
         }
 
+        // Algoritmo principal
         while (!todosVisitados(distancias)) {
-            EntradaDistancia min = encontrarMinimo(distancias);
-            if (min == null || min.vertice.equals(destino)) break;
-            min.visitado = true;
+            Distancia menor = encontrarMenor(distancias);
+            if (menor == null || menor.vertice.equals(destino)) break;
+            menor.visitado = true;
 
-            LinkedList<Edge> arestas = grafo.obterArestasDe(min.vertice);
+            LinkedList<Edge> arestas = grafo.obterArestasDe(menor.vertice);
             Node<Edge> noAresta = arestas.getHead();
-
             while (noAresta != null) {
                 Edge aresta = noAresta.getData();
-                Vertex vizinho = aresta.getDestino();
-                EntradaDistancia entradaVizinho = buscar(distancias, vizinho);
+                Vertex vizinho = aresta.getTarget();
 
-                double novaDist = min.distancia + aresta.getCusto();
+                Distancia entradaVizinho = buscar(distancias, vizinho);
+                double novaDist = menor.distancia + aresta.getTravelTime();
+
                 if (!entradaVizinho.visitado && novaDist < entradaVizinho.distancia) {
                     entradaVizinho.distancia = novaDist;
-                    atualizarAnterior(anteriores, vizinho, min.vertice);
+                    atualizarAnterior(anteriores, vizinho, menor.vertice);
                 }
+
                 noAresta = noAresta.getNext();
             }
         }
@@ -46,8 +49,10 @@ public class Dijkstra<T> {
         return construirCaminho(anteriores, origem, destino);
     }
 
-    private static boolean todosVisitados(LinkedList<EntradaDistancia> lista) {
-        Node<EntradaDistancia> atual = lista.getHead();
+    // Métodos auxiliares
+
+    private static boolean todosVisitados(LinkedList<Distancia> lista) {
+        Node<Distancia> atual = lista.getHead();
         while (atual != null) {
             if (!atual.getData().visitado) return false;
             atual = atual.getNext();
@@ -55,35 +60,32 @@ public class Dijkstra<T> {
         return true;
     }
 
-    private static EntradaDistancia encontrarMinimo(LinkedList<EntradaDistancia> lista) {
-        Node<EntradaDistancia> atual = lista.getHead();
-        EntradaDistancia min = null;
-
+    private static Distancia encontrarMenor(LinkedList<Distancia> lista) {
+        Node<Distancia> atual = lista.getHead();
+        Distancia menor = null;
         while (atual != null) {
-            EntradaDistancia ed = atual.getData();
-            if (!ed.visitado && (min == null || ed.distancia < min.distancia)) {
-                min = ed;
+            Distancia d = atual.getData();
+            if (!d.visitado && (menor == null || d.distancia < menor.distancia)) {
+                menor = d;
             }
             atual = atual.getNext();
         }
-        return min;
+        return menor;
     }
 
-    private static EntradaDistancia buscar(LinkedList<EntradaDistancia> lista, Vertex vertice) {
-        Node<EntradaDistancia> atual = lista.getHead();
+    private static Distancia buscar(LinkedList<Distancia> lista, Vertex v) {
+        Node<Distancia> atual = lista.getHead();
         while (atual != null) {
-            if (atual.getData().vertice.equals(vertice)) {
-                return atual.getData();
-            }
+            if (atual.getData().vertice.equals(v)) return atual.getData();
             atual = atual.getNext();
         }
         return null;
     }
 
-    private static void atualizarAnterior(LinkedList<EntradaAnterior> lista, Vertex vertice, Vertex anterior) {
-        Node<EntradaAnterior> atual = lista.getHead();
+    private static void atualizarAnterior(LinkedList<Anterior> lista, Vertex v, Vertex anterior) {
+        Node<Anterior> atual = lista.getHead();
         while (atual != null) {
-            if (atual.getData().vertice.equals(vertice)) {
+            if (atual.getData().vertice.equals(v)) {
                 atual.getData().anterior = anterior;
                 return;
             }
@@ -91,7 +93,16 @@ public class Dijkstra<T> {
         }
     }
 
-    private static Queue<Vertex> construirCaminho(LinkedList<EntradaAnterior> anteriores, Vertex origem, Vertex destino) {
+    private static Vertex buscarAnterior(LinkedList<Anterior> lista, Vertex v) {
+        Node<Anterior> atual = lista.getHead();
+        while (atual != null) {
+            if (atual.getData().vertice.equals(v)) return atual.getData().anterior;
+            atual = atual.getNext();
+        }
+        return null;
+    }
+
+    private static Queue<Vertex> construirCaminho(LinkedList<Anterior> anteriores, Vertex origem, Vertex destino) {
         Stack<Vertex> pilha = new Stack<>();
         Queue<Vertex> caminho = new Queue<>();
 
@@ -108,35 +119,24 @@ public class Dijkstra<T> {
         return caminho;
     }
 
-    private static Vertex buscarAnterior(LinkedList<EntradaAnterior> lista, Vertex vertice) {
-        Node<EntradaAnterior> atual = lista.getHead();
-        while (atual != null) {
-            if (atual.getData().vertice.equals(vertice)) {
-                return atual.getData().anterior;
-            }
-            atual = atual.getNext();
-        }
-        return null;
-    }
-
-    // Classes auxiliares
-    private static class EntradaDistancia {
+    // Classes auxiliares internas
+    private static class Distancia {
         Vertex vertice;
         double distancia;
         boolean visitado;
 
-        EntradaDistancia(Vertex vertice, double distancia) {
+        Distancia(Vertex vertice, double distancia) {
             this.vertice = vertice;
             this.distancia = distancia;
             this.visitado = false;
         }
     }
 
-    private static class EntradaAnterior {
+    private static class Anterior {
         Vertex vertice;
         Vertex anterior;
 
-        EntradaAnterior(Vertex vertice, Vertex anterior) {
+        Anterior(Vertex vertice, Vertex anterior) {
             this.vertice = vertice;
             this.anterior = anterior;
         }

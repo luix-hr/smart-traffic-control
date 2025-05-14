@@ -3,7 +3,10 @@ package org.icev.smarttrafficcontrol.datastructure.graph;
 import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.Node;
 
-public class Graph<T> {
+import java.io.Serializable;
+
+public class Graph<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private LinkedList<Vertex> vertices;
     private LinkedList<Edge> arestas;
 
@@ -34,7 +37,7 @@ public class Graph<T> {
 
         while (atual != null) {
             Edge aresta = atual.getData();
-            if (aresta.getOrigem().equals(origem)) {
+            if (aresta.getSource().equals(origem)) {
                 resultado.insert(aresta);
             }
             atual = atual.getNext();

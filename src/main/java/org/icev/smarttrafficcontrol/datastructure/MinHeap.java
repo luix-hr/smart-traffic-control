@@ -1,6 +1,9 @@
 package org.icev.smarttrafficcontrol.datastructure;
 
-public class MinHeap<T> {
+import java.io.Serializable;
+
+public class MinHeap<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private LinkedList<Node> heap;
 
     public MinHeap() {

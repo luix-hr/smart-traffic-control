@@ -1,6 +1,9 @@
 package org.icev.smarttrafficcontrol.datastructure;
 
-public class Stack<T> {
+import java.io.Serializable;
+
+public class Stack<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Node top;
 
     public Stack(){

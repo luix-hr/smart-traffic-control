@@ -1,8 +1,13 @@
 package org.icev.smarttrafficcontrol.controller;
 
+import org.icev.smarttrafficcontrol.datastructure.Queue;
 import org.icev.smarttrafficcontrol.datastructure.graph.Edge;
 import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
 import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
+import org.icev.smarttrafficcontrol.datastructure.LinkedList;
+import org.icev.smarttrafficcontrol.datastructure.Node;
+import org.icev.smarttrafficcontrol.model.TrafficLight;
+import org.icev.smarttrafficcontrol.model.Vehicle;
 
 import java.io.*;
 
@@ -10,43 +15,76 @@ public class Simulator implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Graph grafo;
-    private transient boolean running; // Não serializamos estado de execução
+    private VehicleGenerator geradorVeiculos;
+    private Queue<Vehicle> filaVeiculos;
+    private TrafficLightController controladorSemaforos;
+    private transient boolean running;
 
     public Simulator(Graph grafo) {
         this.grafo = grafo;
+        this.geradorVeiculos = new VehicleGenerator(grafo);
+        this.filaVeiculos = new Queue<>();
+        this.controladorSemaforos = new TrafficLightController(coletarSemaforos());
         this.running = false;
     }
 
-    public void start(int cycles) {
+    private LinkedList<TrafficLight> coletarSemaforos() {
+        LinkedList<TrafficLight> semaforos = new LinkedList<>();
+        Node<Vertex> atual = grafo.getVertices().getHead();
+        while (atual != null) {
+            TrafficLight s = atual.getData().getTrafficLight();
+            if (s != null) {
+                semaforos.insert(s);
+            }
+            atual = atual.getNext();
+        }
+        return semaforos;
+    }
+
+    public void start(int cycles, int veiculosPorCiclo, int modeloSemaforo) {
         running = true;
         for (int i = 0; i < cycles && running; i++) {
-            System.out.println("Cycle: " + (i + 1));
+            System.out.println("\nCiclo: " + (i + 1));
 
-            // Lógica simulada de "atualizar semáforos"
-            updateTrafficLights();
-
-            // Simulação de movimentação de veículos
-            simulateVehicles();
+            controladorSemaforos.update(modeloSemaforo);
+            mostrarEstadoSemaforos();
+            geradorVeiculos.gerarMultiplosVeiculos(veiculosPorCiclo, filaVeiculos);
+            simularMovimentoVeiculos();
 
             try {
-                Thread.sleep(1000); // Simula tempo real
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    private void updateTrafficLights() {
-        // Aqui você pode incluir regras de alternância de semáforos
-        System.out.println("Atualizando semáforos... (simulado)");
+    private void mostrarEstadoSemaforos() {
+        LinkedList<TrafficLight> lista = controladorSemaforos.getTrafficLights();
+        Node<TrafficLight> atual = lista.getHead();
+        while (atual != null) {
+            System.out.println(atual.getData());
+            atual = atual.getNext();
+        }
     }
 
-    private void simulateVehicles() {
-        System.out.println("Simulando movimentação de veículos:");
-        for (Vertex origem : grafo.getVertices()) {
-            for (Edge aresta : grafo.obterArestasDe(origem)) {
-                System.out.println("De " + origem.getId() + " para " + aresta.getDestino().getId() +
-                        " (Distância: " + aresta.getPeso() + ")");
+    private void simularMovimentoVeiculos() {
+        while (!filaVeiculos.isEmpty()) {
+            Vehicle veiculo = filaVeiculos.dequeue();
+
+            Vertex destino = veiculo.getProximoDestino();
+            if (destino != null) {
+                TrafficLight semaforo = destino.getTrafficLight();
+                if (semaforo == null || semaforo.getState() == TrafficLight.State.GREEN) {
+                    System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId());
+                    veiculo.mover();
+                    filaVeiculos.enqueue(veiculo);
+                } else {
+                    System.out.println("Veículo " + veiculo.getId() + " aguardando sinal verde em " + destino.getId());
+                    filaVeiculos.enqueue(veiculo);
+                }
+            } else {
+                System.out.println("Veículo " + veiculo.getId() + " chegou ao destino.");
             }
         }
     }
@@ -64,6 +102,10 @@ public class Simulator implements Serializable {
     public void save(String filename) {
         File dir = new File("saves");
         if (!dir.exists()) dir.mkdirs();
+
+        if (!filename.endsWith(".dat")) {
+            filename += ".dat";
+        }
 
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("saves/" + filename))) {
             out.writeObject(this);
@@ -88,4 +130,3 @@ public class Simulator implements Serializable {
         return grafo;
     }
 }
-

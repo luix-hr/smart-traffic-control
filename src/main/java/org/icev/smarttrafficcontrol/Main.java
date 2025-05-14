@@ -1,45 +1,87 @@
 package org.icev.smarttrafficcontrol;
 
 import org.icev.smarttrafficcontrol.controller.Simulator;
-import org.icev.smarttrafficcontrol.model.Intersection;
-import org.icev.smarttrafficcontrol.model.Road;
+import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
+import org.icev.smarttrafficcontrol.service.MapLoader;
+
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Simulator simulator = null;
+        boolean carregado = false;
 
-        City city = new City("SimCity");
+        while (true) {
+            System.out.println("\n===== MENU SIMULADOR DE TRÂNSITO =====");
+            System.out.println("1. Carregar mapa e iniciar simulação");
+            System.out.println("2. Carregar simulação salva");
+            System.out.println("3. Pausar simulação");
+            System.out.println("4. Parar simulação");
+            System.out.println("5. Salvar simulação");
+            System.out.println("6. Sair");
+            System.out.print("Escolha uma opção: ");
+            int opcao = scanner.nextInt();
+            scanner.nextLine();
 
-        Intersection a = new Intersection("A");
-        Intersection b = new Intersection("B");
-        Road road = new Road("A-B", a, b, 1.0);
+            switch (opcao) {
+                case 1:
+                    String caminho = "saves/dados/MoradadoSolTeresinaPiauíBrazil.json";
+                    Graph grafo = MapLoader.carregarJSON(caminho);
+                    simulator = new Simulator(grafo);
+                    carregado = true;
 
-        a.connectRoad(road);
-        b.connectRoad(road);
+                    // Solicita heurística do semáforo
+                    System.out.println("\nEscolha o modelo de controle de semáforo:");
+                    System.out.println("1 - Ciclo fixo (Modelo 1)");
+                    System.out.println("2 - Baseado em fila (Modelo 2)");
+                    System.out.println("3 - Baseado em consumo/horário (Modelo 3)");
+                    System.out.print("Modelo: ");
+                    int modelo = scanner.nextInt();
 
-        city.addIntersection(a);
-        city.addIntersection(b);
-        city.addRoad(road);
+                    System.out.print("Quantos ciclos? ");
+                    int ciclos = scanner.nextInt();
+                    System.out.print("Veículos por ciclo? ");
+                    int veiculosPorCiclo = scanner.nextInt();
 
-        // Inicializa o simulador
-        Simulator simulator = new Simulator(city);
+                    simulator.start(ciclos, veiculosPorCiclo, modelo);
+                    break;
 
-        // Inicia a simulação por 3 ciclos
-        simulator.start(3);
+                case 2:
+                    System.out.print("Digite o nome do arquivo salvo: ");
+                    String arquivo = scanner.nextLine();
+                    simulator = Simulator.load(arquivo);
+                    carregado = simulator != null;
+                    break;
 
-        // Pausa a simulação
-        simulator.pause();
+                case 3:
+                    if (carregado) simulator.pause();
+                    else System.out.println("Nenhuma simulação carregada.");
+                    break;
 
-        // Grava o estado atual da simulação
-        simulator.save("simulacao.dat");
+                case 4:
+                    if (carregado) simulator.stop();
+                    else System.out.println("Nenhuma simulação carregada.");
+                    break;
 
-        // Carrega o simulador de um arquivo
-        Simulator loadedSimulator = Simulator.load("simulacao.dat");
+                case 5:
+                    if (carregado) {
+                        System.out.print("Digite o nome do arquivo para salvar: ");
+                        String nomeArquivo = scanner.nextLine();
+                        simulator.save(nomeArquivo);
+                    } else {
+                        System.out.println("Nenhuma simulação carregada.");
+                    }
+                    break;
 
-        // Continua a simulação carregada por mais 2 ciclos
-        if (loadedSimulator != null) {
-            loadedSimulator.start(2);
-            loadedSimulator.stop();
+                case 6:
+                    System.out.println("Encerrando simulação...");
+                    scanner.close();
+                    return;
+
+                default:
+                    System.out.println("Opção inválida!");
+            }
         }
-
     }
 }

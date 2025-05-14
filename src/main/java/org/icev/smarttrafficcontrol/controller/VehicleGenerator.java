@@ -1,43 +1,59 @@
 package org.icev.smarttrafficcontrol.controller;
 
-import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.Node;
-import org.icev.smarttrafficcontrol.model.Road;
+import org.icev.smarttrafficcontrol.datastructure.Queue;
+import org.icev.smarttrafficcontrol.datastructure.graph.*;
 import org.icev.smarttrafficcontrol.model.Vehicle;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import org.icev.smarttrafficcontrol.service.Dijkstra;
 import java.io.Serializable;
 import java.util.Random;
 
-class VehicleGenerator implements Serializable {
+public class VehicleGenerator implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private LinkedList<Road> roads;
-    private transient Random random = new Random();
+    private Graph grafo;
+    private Random random;
+    private int contador;
 
-    public VehicleGenerator(LinkedList<Road> roads) {
-        this.roads = roads;
+    public VehicleGenerator(Graph grafo) {
+        this.grafo = grafo;
+        this.random = new Random();
+        this.contador = 0;
     }
 
-    public void generate() {
-        if (roads.isEmpty()) return;
+    public Vehicle gerarVeiculoComRota() {
+        Vertex origem = sortearVertice();
+        Vertex destino = sortearVerticeDiferente(origem);
 
-        int roadIndex = random.nextInt(roads.getSize());
-        Node<Road> current = roads.getHead();
-        for (int i = 0; i < roadIndex; i++) {
-            if (current.getNext() != null) {
-                current = current.getNext();
-            }
+        Queue<Vertex> rota = Dijkstra.encontrarMenorCaminho(grafo, origem, destino);
+        Vehicle veiculo = new Vehicle("V" + contador++, rota);
+
+        System.out.println("Veículo " + veiculo.getId() + " criado com rota de " + origem.getId() + " até " + destino.getId());
+        return veiculo;
+    }
+
+    public void gerarMultiplosVeiculos(int quantidade, Queue<Vehicle> filaVeiculos) {
+        for (int i = 0; i < quantidade; i++) {
+            Vehicle veiculo = gerarVeiculoComRota();
+            filaVeiculos.enqueue(veiculo);
         }
-
-        Road selectedRoad = current.getData();
-        Vehicle vehicle = new Vehicle("V" + random.nextInt(1000), selectedRoad);
-        System.out.println("Vehicle " + vehicle.getPlate() + " added to road " + selectedRoad.getName());
     }
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        this.random = new Random(); // reinicializa após desserialização
+    private Vertex sortearVertice() {
+        int tamanho = grafo.getVertices().getSize();
+        int indice = random.nextInt(tamanho);
+        Node<Vertex> atual = grafo.getVertices().getHead();
+        for (int i = 0; i < indice; i++) {
+            atual = atual.getNext();
+        }
+        return atual.getData();
+    }
+
+    private Vertex sortearVerticeDiferente(Vertex diferenteDe) {
+        Vertex candidato;
+        do {
+            candidato = sortearVertice();
+        } while (candidato.equals(diferenteDe));
+        return candidato;
     }
 }

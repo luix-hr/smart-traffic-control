@@ -1,25 +1,40 @@
 package org.icev.smarttrafficcontrol.datastructure.graph;
 
-public class Edge<T> {
-    private Vertex origem;
-    private Vertex destino;
-    private double custo;
+import java.io.Serializable;
 
-    public Edge(Vertex origem, Vertex destino, double custo) {
-        this.origem = origem;
-        this.destino = destino;
-        this.custo = custo;
+public class Edge<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String id;
+    private Vertex source;
+    private Vertex target;
+    private double length;
+    private double maxspeed;
+
+    public Edge(String id, Vertex source, Vertex target, double length, double maxspeed) {
+        this.id = id;
+        this.source = source;
+        this.target = target;
+        this.length = length;
+        this.maxspeed = maxspeed;
     }
 
-    public Vertex getOrigem() {
-        return origem;
+    public Vertex getSource() {
+        return source;
     }
 
-    public Vertex getDestino() {
-        return destino;
+    public Vertex getTarget() {
+        return target;
     }
 
-    public double getCusto() {
-        return custo;
+    public double getTravelTime() {
+        if (maxspeed > 0) {
+            return length / (maxspeed / 3.6);
+        }
+        return length;
+    }
+
+
+    public double getLength() {
+        return length;
     }
 }

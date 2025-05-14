@@ -1,6 +1,9 @@
 package org.icev.smarttrafficcontrol.datastructure;
 
-public class Deck {
+import java.io.Serializable;
+
+public class Deck implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Node head;
     private Node tail;
 
