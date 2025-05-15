@@ -63,4 +63,14 @@ public class Queue<T> implements Serializable {
         }
         return false;
     }
+
+    public int getSize() {
+        int count = 0;
+        Node actual = head;
+        while(actual != null){
+            count++;
+            actual = actual.getNext();
+        }
+        return count;
+    }
 }

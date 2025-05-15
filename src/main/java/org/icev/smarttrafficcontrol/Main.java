@@ -11,15 +11,15 @@ import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new SimulatorUI());
+    public static void main2(String[] args) {
+        SwingUtilities.invokeLater(SimulatorUI::new);
     }
 
 
-    public static void main2() {
+    public static void main(String[] args) {
 
         SimConfig config = new SimConfig();
-        config.setCicloVerde(5);
+        config.setCicloVerde(2);
         config.setCicloAmarelo(2);
         config.setCicloVermelho(5);
         config.setModoPico(false);
@@ -43,7 +43,7 @@ public class Main {
 
             switch (opcao) {
                 case 1:
-                    String caminho = "saves/dados/MoradadoSolTeresinaPiauíBrazil.json";
+                    String caminho = "saves/dados/CentroTeresinaPiauíBrazil.json";
                     Graph grafo = MapLoader.carregarJSON(caminho);
                     simulator = new Simulator(grafo, config);
                     carregado = true;

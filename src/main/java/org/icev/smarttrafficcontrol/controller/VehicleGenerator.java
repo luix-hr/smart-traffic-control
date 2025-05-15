@@ -5,6 +5,7 @@ import org.icev.smarttrafficcontrol.datastructure.Queue;
 import org.icev.smarttrafficcontrol.datastructure.graph.*;
 import org.icev.smarttrafficcontrol.model.Vehicle;
 import org.icev.smarttrafficcontrol.service.Dijkstra;
+
 import java.io.Serializable;
 import java.util.Random;
 
@@ -26,16 +27,30 @@ public class VehicleGenerator implements Serializable {
         Vertex destino = sortearVerticeDiferente(origem);
 
         Queue<Vertex> rota = Dijkstra.encontrarMenorCaminho(grafo, origem, destino);
-        Vehicle veiculo = new Vehicle("V" + contador++, rota);
 
-        System.out.println("Veiculo " + veiculo.getId() + " criado com rota de " + origem.getId() + " ate " + destino.getId());
+        if (rota == null || rota.isEmpty()) {
+            System.out.println("⚠️ Caminho invalido de " + origem.getId() + " ate " + destino.getId() + ". Veiculo nao criado.");
+            return null;
+        }
+
+        if (rota.peek().equals(origem)) {
+            rota.dequeue();
+        }
+
+        Vehicle veiculo = new Vehicle("V" + contador++, rota);
+        System.out.println("✅ Veiculo " + veiculo.getId() + " criado com rota de " + origem.getId() + " ate " + destino.getId());
         return veiculo;
     }
 
     public void gerarMultiplosVeiculos(int quantidade, Queue<Vehicle> filaVeiculos) {
-        for (int i = 0; i < quantidade; i++) {
+        int tentativas = 0;
+        while (quantidade > 0 && tentativas < 10 * quantidade) {
             Vehicle veiculo = gerarVeiculoComRota();
-            filaVeiculos.enqueue(veiculo);
+            if (veiculo != null) {
+                filaVeiculos.enqueue(veiculo);
+                quantidade--;
+            }
+            tentativas++;
         }
     }
 

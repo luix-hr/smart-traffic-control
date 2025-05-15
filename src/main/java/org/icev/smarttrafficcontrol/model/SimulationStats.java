@@ -67,12 +67,12 @@ public class SimulationStats implements Serializable {
     }
 
     public void imprimirResumo() {
-        System.out.println("======== ESTATÍSTICAS DA SIMULAÇÃO ========");
-        System.out.println("Total de veículos: " + totalVeiculos);
-        System.out.printf("Tempo médio de viagem: %.2f ciclos\n", getTempoMedioViagem());
-        System.out.printf("Tempo médio de espera: %.2f ciclos\n", getTempoMedioEspera());
-        System.out.printf("Consumo energético total: %.2f unidades\n", consumoEnergetico);
-        System.out.printf("Índice de congestionamento: %.2f%%\n", getIndiceCongestionamento() * 100);
+        System.out.println("\n======== ESTATISTICAS DA SIMULACAO ========");
+        System.out.println("Total de veiculos: " + totalVeiculos);
+        System.out.printf("Tempo medio de viagem: %.2f ciclos\n", getTempoMedioViagem());
+        System.out.printf("Tempo medio de espera: %.2f ciclos\n", getTempoMedioEspera());
+        System.out.printf("Consumo energetico total: %.2f unidades\n", consumoEnergetico);
+        System.out.printf("Indice de congestionamento: %.2f%%\n", getIndiceCongestionamento() * 100);
         System.out.println("===========================================");
     }
 
@@ -86,7 +86,7 @@ public class SimulationStats implements Serializable {
     }
 
     public void printCiclo(int ciclo) {
-        System.out.printf("[Ciclo %d] Média viagem: %.2f | Média espera: %.2f | Energia: %.2f\n",
+        System.out.printf("[Ciclo %d] Media viagem: %.2f | Media espera: %.2f | Energia: %.2f\n",
                 ciclo, getTempoMedioViagem(), getTempoMedioEspera(), consumoEnergetico);
     }
 }

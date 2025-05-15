@@ -1,5 +1,7 @@
 package org.icev.smarttrafficcontrol.model;
 
+import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
+
 import java.io.Serializable;
 
 public class TrafficLight implements Serializable {
@@ -15,6 +17,7 @@ public class TrafficLight implements Serializable {
     private int duracaoAmarelo;
     private int duracaoVermelho;
     private int timer;
+    private transient Vertex vinculo;
 
     public TrafficLight(String id) {
         this.id = id;
@@ -71,6 +74,14 @@ public class TrafficLight implements Serializable {
         return timer;
     }
 
+    public void setVinculo(Vertex v) {
+        this.vinculo = v;
+    }
+
+    public Vertex getVinculo() {
+        return vinculo;
+    }
+
     @Override
     public String toString() {
         String duracaoAtual = switch (state) {
@@ -79,6 +90,6 @@ public class TrafficLight implements Serializable {
             case RED -> duracaoVermelho + "";
         };
 
-        return "Semáforo " + id + " - Estado: " + state + " (" + timer + "/" + duracaoAtual + ")";
+        return "Semaforo " + id + " - Estado: " + state + " (" + timer + "/" + duracaoAtual + ")";
     }
 }

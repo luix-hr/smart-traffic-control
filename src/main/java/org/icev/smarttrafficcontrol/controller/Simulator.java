@@ -81,29 +81,58 @@ public class Simulator implements Serializable {
     private void simularMovimentoVeiculos() {
         Queue<Vehicle> proximaFila = new Queue<>();
 
+        System.out.println("=== Simulação de Movimento de Veículos ===");
         while (!filaVeiculos.isEmpty()) {
             Vehicle veiculo = filaVeiculos.dequeue();
             veiculo.incrementarTempo();
+
             Vertex destino = veiculo.getProximoDestino();
 
             if (destino != null) {
                 TrafficLight semaforo = destino.getTrafficLight();
-                if (semaforo == null || semaforo.getState() == TrafficLight.State.GREEN) {
-                    System.out.println("Veiculo " + veiculo.getId() + " movendo-se para " + destino.getId());
+
+                if (semaforo == null) {
+                    System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId() + " (sem semáforo)");
                     veiculo.mover();
+                    proximaFila.enqueue(veiculo);
                 } else {
-                    System.out.println("Veiculo " + veiculo.getId() + " aguardando sinal verde em " + destino.getId());
-                    veiculo.incrementarEspera();
+                    System.out.println("Veículo " + veiculo.getId() + " enfrentando semáforo em " + destino.getId() + " - Estado: " + semaforo.getState());
+
+                    if (semaforo.getState() == TrafficLight.State.GREEN) {
+                        System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId());
+                        veiculo.mover();
+                        proximaFila.enqueue(veiculo);
+                    } else {
+                        System.out.println("Veículo " + veiculo.getId() + " parado em semáforo " + destino.getId());
+                        veiculo.incrementarEspera();
+                        destino.adicionarNaFila(veiculo);
+                    }
                 }
-                proximaFila.enqueue(veiculo);
             } else {
-                System.out.println("Veiculo " + veiculo.getId() + " chegou ao destino.");
+                System.out.println("Veículo " + veiculo.getId() + " chegou ao destino após " + veiculo.getTempoTotal() + " ciclos, com " + veiculo.getTempoParado() + " ciclos parado.");
                 stats.registrarViagem(veiculo.getTempoTotal(), veiculo.getTempoParado());
             }
         }
 
+        System.out.println("=== Liberando veículos das filas nos semáforos verdes ===");
+        Node<Vertex> verticeNode = grafo.getVertices().getHead();
+        while (verticeNode != null) {
+            Vertex v = verticeNode.getData();
+            TrafficLight tf = v.getTrafficLight();
+
+            if (tf != null && tf.getState() == TrafficLight.State.GREEN && v.temFila()) {
+                Vehicle liberado = v.removerDaFila();
+                if (liberado != null) {
+                    System.out.println("Veículo " + liberado.getId() + " liberado do semáforo em " + v.getId());
+                    proximaFila.enqueue(liberado);
+                }
+            }
+            verticeNode = verticeNode.getNext();
+        }
+
         filaVeiculos = proximaFila;
     }
+
 
     public void pause() {
         running = false;
