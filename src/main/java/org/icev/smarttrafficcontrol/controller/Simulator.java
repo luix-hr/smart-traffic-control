@@ -6,6 +6,8 @@ import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
 import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
 import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.Node;
+import org.icev.smarttrafficcontrol.model.SimConfig;
+import org.icev.smarttrafficcontrol.model.SimulationStats;
 import org.icev.smarttrafficcontrol.model.TrafficLight;
 import org.icev.smarttrafficcontrol.model.Vehicle;
 
@@ -18,13 +20,17 @@ public class Simulator implements Serializable {
     private VehicleGenerator geradorVeiculos;
     private Queue<Vehicle> filaVeiculos;
     private TrafficLightController controladorSemaforos;
+    private SimulationStats stats;
+    private SimConfig config;
     private transient boolean running;
 
-    public Simulator(Graph grafo) {
+    public Simulator(Graph grafo, SimConfig config) {
         this.grafo = grafo;
+        this.config = config;
         this.geradorVeiculos = new VehicleGenerator(grafo);
         this.filaVeiculos = new Queue<>();
-        this.controladorSemaforos = new TrafficLightController(coletarSemaforos());
+        this.controladorSemaforos = new TrafficLightController(coletarSemaforos(), config);
+        this.stats = new SimulationStats();
         this.running = false;
     }
 
@@ -48,8 +54,10 @@ public class Simulator implements Serializable {
 
             controladorSemaforos.update(modeloSemaforo);
             mostrarEstadoSemaforos();
-            geradorVeiculos.gerarMultiplosVeiculos(veiculosPorCiclo, filaVeiculos);
+            geradorVeiculos.gerarMultiplosVeiculos(config.getVeiculosPorCiclo(), filaVeiculos);
             simularMovimentoVeiculos();
+
+            stats.printCiclo(i + 1);
 
             try {
                 Thread.sleep(1000);
@@ -57,6 +65,8 @@ public class Simulator implements Serializable {
                 Thread.currentThread().interrupt();
             }
         }
+
+        stats.imprimirResumo();
     }
 
     private void mostrarEstadoSemaforos() {
@@ -69,24 +79,30 @@ public class Simulator implements Serializable {
     }
 
     private void simularMovimentoVeiculos() {
+        Queue<Vehicle> proximaFila = new Queue<>();
+
         while (!filaVeiculos.isEmpty()) {
             Vehicle veiculo = filaVeiculos.dequeue();
-
+            veiculo.incrementarTempo();
             Vertex destino = veiculo.getProximoDestino();
+
             if (destino != null) {
                 TrafficLight semaforo = destino.getTrafficLight();
                 if (semaforo == null || semaforo.getState() == TrafficLight.State.GREEN) {
-                    System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId());
+                    System.out.println("Veiculo " + veiculo.getId() + " movendo-se para " + destino.getId());
                     veiculo.mover();
-                    filaVeiculos.enqueue(veiculo);
                 } else {
-                    System.out.println("Veículo " + veiculo.getId() + " aguardando sinal verde em " + destino.getId());
-                    filaVeiculos.enqueue(veiculo);
+                    System.out.println("Veiculo " + veiculo.getId() + " aguardando sinal verde em " + destino.getId());
+                    veiculo.incrementarEspera();
                 }
+                proximaFila.enqueue(veiculo);
             } else {
-                System.out.println("Veículo " + veiculo.getId() + " chegou ao destino.");
+                System.out.println("Veiculo " + veiculo.getId() + " chegou ao destino.");
+                stats.registrarViagem(veiculo.getTempoTotal(), veiculo.getTempoParado());
             }
         }
+
+        filaVeiculos = proximaFila;
     }
 
     public void pause() {
@@ -128,5 +144,21 @@ public class Simulator implements Serializable {
 
     public Graph getGrafo() {
         return grafo;
+    }
+
+    public SimulationStats getEstatisticas() {
+        return stats;
+    }
+
+    public SimConfig getConfig() {
+        return config;
+    }
+
+    public Queue<Vehicle> getFilaVeiculos() {
+        return filaVeiculos;
+    }
+
+    public TrafficLightController getControladorSemaforos() {
+        return controladorSemaforos;
     }
 }

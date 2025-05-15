@@ -108,7 +108,7 @@ public class SimulatorApp extends Application {
 
             TrafficLight tf = v.getTrafficLight();
             if (tf != null) {
-                switch (tf.getEstado()) {
+                switch (tf.getState()) {
                     case GREEN -> gc.setFill(Color.LIME);
                     case YELLOW -> gc.setFill(Color.GOLD);
                     case RED -> gc.setFill(Color.RED);

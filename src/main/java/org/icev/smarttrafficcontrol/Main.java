@@ -2,12 +2,29 @@ package org.icev.smarttrafficcontrol;
 
 import org.icev.smarttrafficcontrol.controller.Simulator;
 import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
+import org.icev.smarttrafficcontrol.model.SimConfig;
 import org.icev.smarttrafficcontrol.service.MapLoader;
+import org.icev.smarttrafficcontrol.ui.SimulatorUI;
 
+import javax.swing.*;
 import java.util.Scanner;
 
 public class Main {
+
     public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new SimulatorUI());
+    }
+
+
+    public static void main2() {
+
+        SimConfig config = new SimConfig();
+        config.setCicloVerde(5);
+        config.setCicloAmarelo(2);
+        config.setCicloVermelho(5);
+        config.setModoPico(false);
+        config.setHorarioAtual(14);
+
         Scanner scanner = new Scanner(System.in);
         Simulator simulator = null;
         boolean carregado = false;
@@ -28,7 +45,7 @@ public class Main {
                 case 1:
                     String caminho = "saves/dados/MoradadoSolTeresinaPiauíBrazil.json";
                     Graph grafo = MapLoader.carregarJSON(caminho);
-                    simulator = new Simulator(grafo);
+                    simulator = new Simulator(grafo, config);
                     carregado = true;
 
                     // Solicita heurística do semáforo
@@ -43,6 +60,7 @@ public class Main {
                     int ciclos = scanner.nextInt();
                     System.out.print("Veículos por ciclo? ");
                     int veiculosPorCiclo = scanner.nextInt();
+                    config.setVeiculosPorCiclo(veiculosPorCiclo);
 
                     simulator.start(ciclos, veiculosPorCiclo, modelo);
                     break;

@@ -43,6 +43,9 @@ public class Queue<T> implements Serializable {
         return head.getData();
     }
 
+    public Node<T> getHead() {
+        return head;
+    }
 
     public void print(){
         Node actual = head;

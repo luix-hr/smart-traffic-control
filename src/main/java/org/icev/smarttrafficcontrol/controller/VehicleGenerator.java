@@ -28,7 +28,7 @@ public class VehicleGenerator implements Serializable {
         Queue<Vertex> rota = Dijkstra.encontrarMenorCaminho(grafo, origem, destino);
         Vehicle veiculo = new Vehicle("V" + contador++, rota);
 
-        System.out.println("Veículo " + veiculo.getId() + " criado com rota de " + origem.getId() + " até " + destino.getId());
+        System.out.println("Veiculo " + veiculo.getId() + " criado com rota de " + origem.getId() + " ate " + destino.getId());
         return veiculo;
     }
 

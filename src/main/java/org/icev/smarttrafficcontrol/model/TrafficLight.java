@@ -5,41 +5,52 @@ import java.io.Serializable;
 public class TrafficLight implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public State getEstado() {
-        return state;
-    }
-
     public enum State {
         GREEN, YELLOW, RED
     }
 
     private String id;
     private State state;
-    private int duration;
+    private int duracaoVerde;
+    private int duracaoAmarelo;
+    private int duracaoVermelho;
     private int timer;
 
     public TrafficLight(String id) {
         this.id = id;
         this.state = State.RED;
-        this.duration = 5;
+        this.duracaoVerde = 5;
+        this.duracaoAmarelo = 2;
+        this.duracaoVermelho = 5;
         this.timer = 0;
     }
 
-    public void update() {
+    public void updateCycle(int verde, int amarelo, int vermelho) {
+        this.duracaoVerde = verde;
+        this.duracaoAmarelo = amarelo;
+        this.duracaoVermelho = vermelho;
+
         timer++;
-        if (timer >= duration) {
-            switch (state) {
-                case RED:
-                    state = State.GREEN;
-                    break;
-                case GREEN:
+
+        switch (state) {
+            case GREEN:
+                if (timer >= duracaoVerde) {
                     state = State.YELLOW;
-                    break;
-                case YELLOW:
+                    timer = 0;
+                }
+                break;
+            case YELLOW:
+                if (timer >= duracaoAmarelo) {
                     state = State.RED;
-                    break;
-            }
-            timer = 0;
+                    timer = 0;
+                }
+                break;
+            case RED:
+                if (timer >= duracaoVermelho) {
+                    state = State.GREEN;
+                    timer = 0;
+                }
+                break;
         }
     }
 
@@ -52,10 +63,6 @@ public class TrafficLight implements Serializable {
         this.timer = 0;
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
     public String getId() {
         return id;
     }
@@ -64,12 +71,14 @@ public class TrafficLight implements Serializable {
         return timer;
     }
 
-    public int getDuration() {
-        return duration;
-    }
-
     @Override
     public String toString() {
-        return "Semáforo " + id + " - Estado: " + state + " (" + timer + "/" + duration + ")";
+        String duracaoAtual = switch (state) {
+            case GREEN -> duracaoVerde + "";
+            case YELLOW -> duracaoAmarelo + "";
+            case RED -> duracaoVermelho + "";
+        };
+
+        return "Semáforo " + id + " - Estado: " + state + " (" + timer + "/" + duracaoAtual + ")";
     }
 }

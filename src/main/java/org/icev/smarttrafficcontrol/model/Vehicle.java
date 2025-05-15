@@ -8,6 +8,8 @@ import java.io.Serializable;
 public class Vehicle implements Serializable {
     private static final long serialVersionUID = 1L;
     private String id;
+    private int tempoParado = 0;
+    private int tempoTotal = 0;
     private Queue<Vertex> rota;
 
     public Vehicle(String id, Queue<Vertex> rota) {
@@ -27,9 +29,26 @@ public class Vehicle implements Serializable {
         return rota.isEmpty() ? null : rota.peek();
     }
 
+    public void incrementarEspera() {
+        tempoParado++;
+        tempoTotal++;
+    }
+
+    public void incrementarTempo() {
+        tempoTotal++;
+    }
+
+    public int getTempoParado() {
+        return tempoParado;
+    }
+
+    public int getTempoTotal() {
+        return tempoTotal;
+    }
+
     public void mover() {
         if (!rota.isEmpty()) {
-            rota.dequeue(); // anda para o próximo vértice
+            rota.dequeue();
         }
     }
 }
