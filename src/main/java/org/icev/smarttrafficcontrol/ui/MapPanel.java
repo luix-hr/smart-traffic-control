@@ -38,7 +38,6 @@ public class MapPanel extends JPanel {
 
         if (grafo == null) return;
 
-        // Desenhar arestas
         g.setColor(Color.LIGHT_GRAY);
         Node<Edge> edgeNode = grafo.getArestas().getHead();
         while (edgeNode != null) {
@@ -49,7 +48,6 @@ public class MapPanel extends JPanel {
             edgeNode = edgeNode.getNext();
         }
 
-        // Desenhar vértices e semáforos
         Node<Vertex> vertexNode = grafo.getVertices().getHead();
         while (vertexNode != null) {
             Vertex v = vertexNode.getData();
@@ -70,7 +68,6 @@ public class MapPanel extends JPanel {
             vertexNode = vertexNode.getNext();
         }
 
-        // Desenhar veículos
         if (veiculos != null) {
             g.setColor(Color.BLUE);
             Node<Vehicle> vNode = veiculos.getHead();

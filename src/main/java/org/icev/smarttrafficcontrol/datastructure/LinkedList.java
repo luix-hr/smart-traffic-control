@@ -71,6 +71,22 @@ public class LinkedList<T> implements Serializable {
         size++;
     }
 
+    public void concat(LinkedList<T> list) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        if (this.isEmpty()) {
+            this.head = list.head;
+            this.tail = list.tail;  // Atualiza tail também
+            this.size = list.size;
+        } else {
+            tail.setNext(list.head);  // Usa tail direto para encadear, sem precisar do while
+            this.tail = list.tail;    // Atualiza tail para o tail da lista concatenada
+            this.size += list.size;
+        }
+    }
+
+
     public boolean remove(T data) {
         if (isEmpty()) return false;
 

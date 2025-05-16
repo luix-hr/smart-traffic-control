@@ -57,6 +57,10 @@ public class TrafficLight implements Serializable {
         }
     }
 
+    public void resetTimer() {
+        this.timer = 0;
+    }
+
     public State getState() {
         return state;
     }
@@ -84,12 +88,12 @@ public class TrafficLight implements Serializable {
 
     @Override
     public String toString() {
-        String duracaoAtual = switch (state) {
-            case GREEN -> duracaoVerde + "";
-            case YELLOW -> duracaoAmarelo + "";
-            case RED -> duracaoVermelho + "";
+        int duracao = switch (state) {
+            case GREEN -> duracaoVerde;
+            case YELLOW -> duracaoAmarelo;
+            case RED -> duracaoVermelho;
         };
-
-        return "Semaforo " + id + " - Estado: " + state + " (" + timer + "/" + duracaoAtual + ")";
+        return "Semáforo " + id + " - Estado: " + state + " (" + timer + "/" + duracao + ")";
     }
+
 }

@@ -1,8 +1,12 @@
 package org.icev.smarttrafficcontrol.service;
 
+import org.icev.smarttrafficcontrol.controller.IntersectionController;
+import org.icev.smarttrafficcontrol.datastructure.LinkedList;
+import org.icev.smarttrafficcontrol.datastructure.Node;
 import org.icev.smarttrafficcontrol.datastructure.graph.Edge;
 import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
 import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
+import org.icev.smarttrafficcontrol.model.SimConfig;
 import org.icev.smarttrafficcontrol.model.TrafficLight;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,7 +30,6 @@ public class MapLoader {
             String jsonContent = Files.readString(Paths.get(caminhoArquivo));
             JSONObject root = new JSONObject(jsonContent);
 
-            // Lê IDs dos vértices que possuem semáforo
             JSONArray trafficLightsArray = root.getJSONArray("traffic_lights");
             for (int i = 0; i < trafficLightsArray.length(); i++) {
                 JSONObject semaforoNode = trafficLightsArray.getJSONObject(i);
@@ -34,7 +37,6 @@ public class MapLoader {
                 verticesComSemaforo.add(idSemaforo);
             }
 
-            // Carrega os vértices
             JSONArray nodes = root.getJSONArray("nodes");
             for (int i = 0; i < nodes.length(); i++) {
                 JSONObject node = nodes.getJSONObject(i);
@@ -44,7 +46,6 @@ public class MapLoader {
 
                 Vertex vertice = new Vertex(id, lat, lon);
 
-                // Se vértice tem semáforo, cria e vincula
                 if (verticesComSemaforo.contains(id)) {
                     TrafficLight semaforo = new TrafficLight(id);
                     semaforo.setVinculo(vertice);
@@ -55,7 +56,6 @@ public class MapLoader {
                 mapaVertices.put(id, vertice);
             }
 
-            // Carrega as arestas (edges)
             JSONArray edges = root.getJSONArray("edges");
             for (int i = 0; i < edges.length(); i++) {
                 JSONObject edge = edges.getJSONObject(i);
@@ -79,5 +79,54 @@ public class MapLoader {
         }
 
         return grafo;
+    }
+
+    public static LinkedList<IntersectionController> criarIntersecoesAutomaticas(Graph grafo, SimConfig config) {
+        LinkedList<IntersectionController> intersecoes = new LinkedList<>();
+        Node<Vertex> atual = grafo.getVertices().getHead();
+
+        while (atual != null) {
+            Vertex centro = atual.getData();
+            TrafficLight semaforoCentro = centro.getTrafficLight();
+            if (semaforoCentro != null) {
+                LinkedList<TrafficLight> grupo1 = new LinkedList<>();
+                LinkedList<TrafficLight> grupo2 = new LinkedList<>();
+
+                grupo1.insert(semaforoCentro); // adiciona o próprio
+
+                Node<Edge> arestaAtual = grafo.getArestas().getHead();
+                while (arestaAtual != null) {
+                    Edge e = arestaAtual.getData();
+                    Vertex vizinho = null;
+                    if (e.getSource().equals(centro)) vizinho = e.getTarget();
+                    else if (e.getTarget().equals(centro)) vizinho = e.getSource();
+
+                    if (vizinho != null && vizinho.getTrafficLight() != null) {
+                        double diffLat = Math.abs(centro.getLatitude() - vizinho.getLatitude());
+                        double diffLon = Math.abs(centro.getLongitude() - vizinho.getLongitude());
+
+                        if (diffLat > diffLon) {
+                            grupo1.insert(vizinho.getTrafficLight()); // vertical
+                        } else {
+                            grupo2.insert(vizinho.getTrafficLight()); // horizontal
+                        }
+                    }
+                    arestaAtual = arestaAtual.getNext();
+                }
+
+                if (!grupo1.isEmpty() || !grupo2.isEmpty()) {
+                    IntersectionController intersec = new IntersectionController("int_" + centro.getId(), grupo1, grupo2, config);
+                    intersecoes.insert(intersec);
+                }
+            }
+            atual = atual.getNext();
+        }
+        return intersecoes;
+    }
+
+    private static double distancia(Vertex v1, Vertex v2) {
+        double dLat = v1.getLatitude() - v2.getLatitude();
+        double dLon = v1.getLongitude() - v2.getLongitude();
+        return Math.sqrt(dLat * dLat + dLon * dLon);
     }
 }

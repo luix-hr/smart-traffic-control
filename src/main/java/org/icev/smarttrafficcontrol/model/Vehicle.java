@@ -14,6 +14,9 @@ public class Vehicle implements Serializable {
 
     public Vehicle(String id, Queue<Vertex> rota) {
         this.id = id;
+        if (rota == null) {
+            throw new IllegalArgumentException("Rota não pode ser null");
+        }
         this.rota = rota;
     }
 
@@ -50,6 +53,6 @@ public class Vehicle implements Serializable {
         if (!rota.isEmpty()) {
             rota.dequeue();
         }
+        incrementarTempo();  // Conta o tempo de movimento também
     }
 }
-

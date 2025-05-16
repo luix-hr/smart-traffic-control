@@ -1,6 +1,8 @@
 package org.icev.smarttrafficcontrol;
 
+import org.icev.smarttrafficcontrol.controller.IntersectionController;
 import org.icev.smarttrafficcontrol.controller.Simulator;
+import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
 import org.icev.smarttrafficcontrol.model.SimConfig;
 import org.icev.smarttrafficcontrol.service.MapLoader;
@@ -43,9 +45,10 @@ public class Main {
 
             switch (opcao) {
                 case 1:
-                    String caminho = "saves/dados/CentroTeresinaPiauíBrazil.json";
+                    String caminho = "saves/dados/exemplo.json";
                     Graph grafo = MapLoader.carregarJSON(caminho);
-                    simulator = new Simulator(grafo, config);
+                    LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
+                    simulator = new Simulator(grafo, config, intersecoes);
                     carregado = true;
 
                     // Solicita heurística do semáforo
@@ -55,6 +58,7 @@ public class Main {
                     System.out.println("3 - Baseado em consumo/horário (Modelo 3)");
                     System.out.print("Modelo: ");
                     int modelo = scanner.nextInt();
+                    simulator.setModeloSemaforo(modelo);
 
                     System.out.print("Quantos ciclos? ");
                     int ciclos = scanner.nextInt();
@@ -62,7 +66,7 @@ public class Main {
                     int veiculosPorCiclo = scanner.nextInt();
                     config.setVeiculosPorCiclo(veiculosPorCiclo);
 
-                    simulator.start(ciclos, veiculosPorCiclo, modelo);
+                    simulator.start(ciclos, veiculosPorCiclo);
                     break;
 
                 case 2:

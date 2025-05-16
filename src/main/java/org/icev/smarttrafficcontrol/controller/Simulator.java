@@ -1,7 +1,6 @@
 package org.icev.smarttrafficcontrol.controller;
 
 import org.icev.smarttrafficcontrol.datastructure.Queue;
-import org.icev.smarttrafficcontrol.datastructure.graph.Edge;
 import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
 import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
 import org.icev.smarttrafficcontrol.datastructure.LinkedList;
@@ -24,37 +23,28 @@ public class Simulator implements Serializable {
     private SimConfig config;
     private transient boolean running;
 
-    public Simulator(Graph grafo, SimConfig config) {
+    public Simulator(Graph grafo, SimConfig config, LinkedList<IntersectionController> intersecoes) {
         this.grafo = grafo;
         this.config = config;
         this.geradorVeiculos = new VehicleGenerator(grafo);
         this.filaVeiculos = new Queue<>();
-        this.controladorSemaforos = new TrafficLightController(coletarSemaforos(), config);
+        this.controladorSemaforos = new TrafficLightController(intersecoes, config);
         this.stats = new SimulationStats();
         this.running = false;
     }
 
-    private LinkedList<TrafficLight> coletarSemaforos() {
-        LinkedList<TrafficLight> semaforos = new LinkedList<>();
-        Node<Vertex> atual = grafo.getVertices().getHead();
-        while (atual != null) {
-            TrafficLight s = atual.getData().getTrafficLight();
-            if (s != null) {
-                semaforos.insert(s);
-            }
-            atual = atual.getNext();
-        }
-        return semaforos;
+    public void setModeloSemaforo(int modelo) {
+        this.controladorSemaforos.setModelo(modelo);
     }
 
-    public void start(int cycles, int veiculosPorCiclo, int modeloSemaforo) {
+    public void start(int cycles, int veiculosPorCiclo) {
         running = true;
+        geradorVeiculos.gerarMultiplosVeiculos(config.getVeiculosPorCiclo(), filaVeiculos);
         for (int i = 0; i < cycles && running; i++) {
             System.out.println("\nCiclo: " + (i + 1));
 
-            controladorSemaforos.update(modeloSemaforo);
+            controladorSemaforos.update();
             mostrarEstadoSemaforos();
-            geradorVeiculos.gerarMultiplosVeiculos(config.getVeiculosPorCiclo(), filaVeiculos);
             simularMovimentoVeiculos();
 
             stats.printCiclo(i + 1);
@@ -70,7 +60,7 @@ public class Simulator implements Serializable {
     }
 
     private void mostrarEstadoSemaforos() {
-        LinkedList<TrafficLight> lista = controladorSemaforos.getTrafficLights();
+        LinkedList<TrafficLight> lista = controladorSemaforos.getTodosSemaforos();
         Node<TrafficLight> atual = lista.getHead();
         while (atual != null) {
             System.out.println(atual.getData());
@@ -81,53 +71,25 @@ public class Simulator implements Serializable {
     private void simularMovimentoVeiculos() {
         Queue<Vehicle> proximaFila = new Queue<>();
 
-        System.out.println("=== Simulação de Movimento de Veículos ===");
         while (!filaVeiculos.isEmpty()) {
             Vehicle veiculo = filaVeiculos.dequeue();
-            veiculo.incrementarTempo();
-
             Vertex destino = veiculo.getProximoDestino();
 
             if (destino != null) {
                 TrafficLight semaforo = destino.getTrafficLight();
-
-                if (semaforo == null) {
-                    System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId() + " (sem semáforo)");
+                if (semaforo == null || semaforo.getState() == TrafficLight.State.GREEN) {
+                    System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId());
                     veiculo.mover();
-                    proximaFila.enqueue(veiculo);
                 } else {
-                    System.out.println("Veículo " + veiculo.getId() + " enfrentando semáforo em " + destino.getId() + " - Estado: " + semaforo.getState());
-
-                    if (semaforo.getState() == TrafficLight.State.GREEN) {
-                        System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId());
-                        veiculo.mover();
-                        proximaFila.enqueue(veiculo);
-                    } else {
-                        System.out.println("Veículo " + veiculo.getId() + " parado em semáforo " + destino.getId());
-                        veiculo.incrementarEspera();
-                        destino.adicionarNaFila(veiculo);
-                    }
+                    System.out.println("Veículo " + veiculo.getId() + " aguardando sinal verde em " + destino.getId());
+                    veiculo.incrementarEspera();
+                    veiculo.incrementarTempo();
                 }
+                proximaFila.enqueue(veiculo);
             } else {
-                System.out.println("Veículo " + veiculo.getId() + " chegou ao destino após " + veiculo.getTempoTotal() + " ciclos, com " + veiculo.getTempoParado() + " ciclos parado.");
+                System.out.println("Veículo " + veiculo.getId() + " chegou ao destino.");
                 stats.registrarViagem(veiculo.getTempoTotal(), veiculo.getTempoParado());
             }
-        }
-
-        System.out.println("=== Liberando veículos das filas nos semáforos verdes ===");
-        Node<Vertex> verticeNode = grafo.getVertices().getHead();
-        while (verticeNode != null) {
-            Vertex v = verticeNode.getData();
-            TrafficLight tf = v.getTrafficLight();
-
-            if (tf != null && tf.getState() == TrafficLight.State.GREEN && v.temFila()) {
-                Vehicle liberado = v.removerDaFila();
-                if (liberado != null) {
-                    System.out.println("Veículo " + liberado.getId() + " liberado do semáforo em " + v.getId());
-                    proximaFila.enqueue(liberado);
-                }
-            }
-            verticeNode = verticeNode.getNext();
         }
 
         filaVeiculos = proximaFila;
@@ -181,13 +143,5 @@ public class Simulator implements Serializable {
 
     public SimConfig getConfig() {
         return config;
-    }
-
-    public Queue<Vehicle> getFilaVeiculos() {
-        return filaVeiculos;
-    }
-
-    public TrafficLightController getControladorSemaforos() {
-        return controladorSemaforos;
     }
 }

@@ -74,41 +74,41 @@ public class SimulatorUI extends JFrame {
     }
 
     private void iniciarSimulacao() {
-        try {
-            int ciclos = Integer.parseInt(ciclosField.getText());
-            int veiculos = Integer.parseInt(veiculosField.getText());
-
-            Graph grafo = MapLoader.carregarJSON("saves/dados/MoradadoSolTeresinaPiauíBrazil.json");
-            simulator = new Simulator(grafo, new org.icev.smarttrafficcontrol.model.SimConfig());
-
-            int modelo = modeloSemaforo.getSelectedIndex() + 1;
-            simulator.getConfig().setVeiculosPorCiclo(veiculos);
-            simulator.getControladorSemaforos().setModelo(modelo);
-
-            mapa.setGrafo(grafo);
-            mapa.setVeiculos(simulator.getFilaVeiculos());
-
-            PrintStream consoleOut = System.out;
-            System.setOut(new PrintStream(new OutputStream() {
-                @Override
-                public void write(int b) {
-                    logArea.append(String.valueOf((char) b));
-                    logArea.setCaretPosition(logArea.getDocument().getLength());
-                }
-            }));
-
-            new Thread(() -> {
-                simulator.start(ciclos, veiculos, modelo);
-                SwingUtilities.invokeLater(() -> {
-                    mapa.repaint();
-                    exibirResumo(simulator.getEstatisticas());
-                });
-                System.setOut(consoleOut);
-            }).start();
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
-        }
+//        try {
+//            int ciclos = Integer.parseInt(ciclosField.getText());
+//            int veiculos = Integer.parseInt(veiculosField.getText());
+//
+//            Graph grafo = MapLoader.carregarJSON("saves/dados/MoradadoSolTeresinaPiauíBrazil.json");
+//            simulator = new Simulator(grafo, new org.icev.smarttrafficcontrol.model.SimConfig());
+//
+//            int modelo = modeloSemaforo.getSelectedIndex() + 1;
+//            simulator.getConfig().setVeiculosPorCiclo(veiculos);
+//            simulator.getControladorSemaforos().setModelo(modelo);
+//
+//            mapa.setGrafo(grafo);
+//            mapa.setVeiculos(simulator.getFilaVeiculos());
+//
+//            PrintStream consoleOut = System.out;
+//            System.setOut(new PrintStream(new OutputStream() {
+//                @Override
+//                public void write(int b) {
+//                    logArea.append(String.valueOf((char) b));
+//                    logArea.setCaretPosition(logArea.getDocument().getLength());
+//                }
+//            }));
+//
+//            new Thread(() -> {
+//                simulator.start(ciclos, veiculos, modelo);
+//                SwingUtilities.invokeLater(() -> {
+//                    mapa.repaint();
+//                    exibirResumo(simulator.getEstatisticas());
+//                });
+//                System.setOut(consoleOut);
+//            }).start();
+//
+//        } catch (Exception ex) {
+//            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
+//        }
     }
 
     private void exibirResumo(SimulationStats stats) {

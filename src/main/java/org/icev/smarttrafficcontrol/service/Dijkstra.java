@@ -12,7 +12,6 @@ public class Dijkstra implements Serializable {
         LinkedList<Distancia> distancias = new LinkedList<>();
         LinkedList<Anterior> anteriores = new LinkedList<>();
 
-        // Inicializa distâncias
         Node<Vertex> atual = grafo.getVertices().getHead();
         while (atual != null) {
             Vertex v = atual.getData();
@@ -22,7 +21,6 @@ public class Dijkstra implements Serializable {
             atual = atual.getNext();
         }
 
-        // Algoritmo principal
         while (!todosVisitados(distancias)) {
             Distancia menor = encontrarMenor(distancias);
             if (menor == null || menor.vertice.equals(destino)) break;
@@ -48,8 +46,6 @@ public class Dijkstra implements Serializable {
 
         return construirCaminho(anteriores, origem, destino);
     }
-
-    // Métodos auxiliares
 
     private static boolean todosVisitados(LinkedList<Distancia> lista) {
         Node<Distancia> atual = lista.getHead();
@@ -119,7 +115,6 @@ public class Dijkstra implements Serializable {
         return caminho;
     }
 
-    // Classes auxiliares internas
     private static class Distancia {
         Vertex vertice;
         double distancia;
