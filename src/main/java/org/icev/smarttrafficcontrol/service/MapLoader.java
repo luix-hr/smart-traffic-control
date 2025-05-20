@@ -83,16 +83,21 @@ public class MapLoader {
 
     public static LinkedList<IntersectionController> criarIntersecoesAutomaticas(Graph grafo, SimConfig config) {
         LinkedList<IntersectionController> intersecoes = new LinkedList<>();
+        Set<String> semaforosAgrupados = new HashSet<>();
         Node<Vertex> atual = grafo.getVertices().getHead();
 
         while (atual != null) {
             Vertex centro = atual.getData();
             TrafficLight semaforoCentro = centro.getTrafficLight();
-            if (semaforoCentro != null) {
+
+            if (semaforoCentro != null && !semaforosAgrupados.contains(centro.getId())) {
                 LinkedList<TrafficLight> grupo1 = new LinkedList<>();
                 LinkedList<TrafficLight> grupo2 = new LinkedList<>();
+                Set<String> usados = new HashSet<>();
 
-                grupo1.insert(semaforoCentro); // adiciona o próprio
+                grupo1.insert(semaforoCentro);
+                usados.add(centro.getId());
+                semaforosAgrupados.add(centro.getId());
 
                 Node<Edge> arestaAtual = grafo.getArestas().getHead();
                 while (arestaAtual != null) {
@@ -101,7 +106,7 @@ public class MapLoader {
                     if (e.getSource().equals(centro)) vizinho = e.getTarget();
                     else if (e.getTarget().equals(centro)) vizinho = e.getSource();
 
-                    if (vizinho != null && vizinho.getTrafficLight() != null) {
+                    if (vizinho != null && vizinho.getTrafficLight() != null && !usados.contains(vizinho.getId())) {
                         double diffLat = Math.abs(centro.getLatitude() - vizinho.getLatitude());
                         double diffLon = Math.abs(centro.getLongitude() - vizinho.getLongitude());
 
@@ -110,7 +115,11 @@ public class MapLoader {
                         } else {
                             grupo2.insert(vizinho.getTrafficLight()); // horizontal
                         }
+
+                        usados.add(vizinho.getId());
+                        semaforosAgrupados.add(vizinho.getId());
                     }
+
                     arestaAtual = arestaAtual.getNext();
                 }
 
@@ -119,8 +128,10 @@ public class MapLoader {
                     intersecoes.insert(intersec);
                 }
             }
+
             atual = atual.getNext();
         }
+
         return intersecoes;
     }
 

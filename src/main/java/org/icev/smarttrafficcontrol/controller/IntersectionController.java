@@ -140,6 +140,14 @@ public class IntersectionController implements Serializable {
         return todos;
     }
 
+    public LinkedList<TrafficLight> getGrupo1() {
+        return grupo1;
+    }
+
+    public LinkedList<TrafficLight> getGrupo2() {
+        return grupo2;
+    }
+
     public String getId() {
         return id;
     }

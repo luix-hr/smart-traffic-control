@@ -9,6 +9,7 @@ import org.icev.smarttrafficcontrol.model.SimConfig;
 import org.icev.smarttrafficcontrol.model.SimulationStats;
 import org.icev.smarttrafficcontrol.model.TrafficLight;
 import org.icev.smarttrafficcontrol.model.Vehicle;
+import org.icev.smarttrafficcontrol.gui.SimulatorUI;
 
 import java.io.*;
 
@@ -22,32 +23,49 @@ public class Simulator implements Serializable {
     private SimulationStats stats;
     private SimConfig config;
     private transient boolean running;
+    private transient SimulatorUI ui;
+    private LinkedList<IntersectionController> intersecoes;
 
-    public Simulator(Graph grafo, SimConfig config, LinkedList<IntersectionController> intersecoes) {
+    public Simulator(Graph grafo, SimConfig config, LinkedList<IntersectionController> intersecoes, String caminhoMapa) {
         this.grafo = grafo;
         this.config = config;
+        this.intersecoes = intersecoes;
         this.geradorVeiculos = new VehicleGenerator(grafo);
         this.filaVeiculos = new Queue<>();
         this.controladorSemaforos = new TrafficLightController(intersecoes, config);
         this.stats = new SimulationStats();
         this.running = false;
+        this.ui = new SimulatorUI(caminhoMapa); // Ajustado conforme sua classe atual
     }
 
     public void setModeloSemaforo(int modelo) {
         this.controladorSemaforos.setModelo(modelo);
     }
 
-    public void start(int cycles, int veiculosPorCiclo) {
+    public void start(int cycles, int veiculosPorCiclo, int modelo) {
         running = true;
-        geradorVeiculos.gerarMultiplosVeiculos(config.getVeiculosPorCiclo(), filaVeiculos);
+
         for (int i = 0; i < cycles && running; i++) {
             System.out.println("\nCiclo: " + (i + 1));
 
             controladorSemaforos.update();
             mostrarEstadoSemaforos();
-            simularMovimentoVeiculos();
 
+            geradorVeiculos.gerarMultiplosVeiculos(config.getVeiculosPorCiclo(), filaVeiculos);
+            simularMovimentoVeiculos();
             stats.printCiclo(i + 1);
+
+            // Atualizar a interface gráfica usando estruturas próprias
+            LinkedList<Vehicle> listaVeiculos = new LinkedList<>();
+            Queue<Vehicle> temp = new Queue<>();
+
+            while (!filaVeiculos.isEmpty()) {
+                Vehicle v = filaVeiculos.dequeue();
+                listaVeiculos.insert(v);
+                temp.enqueue(v);
+            }
+            filaVeiculos = temp;
+            ui.atualizar(listaVeiculos, intersecoes);
 
             try {
                 Thread.sleep(1000);
@@ -94,7 +112,6 @@ public class Simulator implements Serializable {
 
         filaVeiculos = proximaFila;
     }
-
 
     public void pause() {
         running = false;

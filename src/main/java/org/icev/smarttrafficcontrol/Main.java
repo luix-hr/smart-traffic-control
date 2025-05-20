@@ -6,19 +6,44 @@ import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
 import org.icev.smarttrafficcontrol.model.SimConfig;
 import org.icev.smarttrafficcontrol.service.MapLoader;
-import org.icev.smarttrafficcontrol.ui.SimulatorUI;
+import org.icev.smarttrafficcontrol.gui.SimulatorUI;
 
 import javax.swing.*;
 import java.util.Scanner;
 
 public class Main {
 
-    public static void main2(String[] args) {
-        SwingUtilities.invokeLater(SimulatorUI::new);
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            // Configurações iniciais
+            SimConfig config = new SimConfig();
+            config.setCicloVerde(5);
+            config.setCicloAmarelo(2);
+            config.setCicloVermelho(5);
+            config.setModoPico(false);
+            config.setHorarioAtual(14);
+
+            // Carrega mapa e configura simulação
+            String caminho = "saves/dados/exemplo.json";
+            Graph grafo = MapLoader.carregarJSON(caminho);
+            LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
+
+            // Inicializa interface
+            SimulatorUI ui = new SimulatorUI(caminho);
+
+            // Inicializa simulador com integração visual
+            Simulator simulator = new Simulator(grafo, config, intersecoes, caminho);
+            simulator.setOnUpdate(vehicles -> ui.atualizar(vehicles));
+
+            // Inicia com parâmetros padrão
+            simulator.setModeloSemaforo(1);
+            config.setVeiculosPorCiclo(10);
+            simulator.start(30, 10, 1);
+        });
     }
 
 
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
 
         SimConfig config = new SimConfig();
         config.setCicloVerde(2);
@@ -48,7 +73,7 @@ public class Main {
                     String caminho = "saves/dados/exemplo.json";
                     Graph grafo = MapLoader.carregarJSON(caminho);
                     LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
-                    simulator = new Simulator(grafo, config, intersecoes);
+                    simulator = new Simulator(grafo, config, intersecoes, caminho);
                     carregado = true;
 
                     // Solicita heurística do semáforo
@@ -66,7 +91,7 @@ public class Main {
                     int veiculosPorCiclo = scanner.nextInt();
                     config.setVeiculosPorCiclo(veiculosPorCiclo);
 
-                    simulator.start(ciclos, veiculosPorCiclo);
+                    simulator.start(ciclos, veiculosPorCiclo, modelo);
                     break;
 
                 case 2:
