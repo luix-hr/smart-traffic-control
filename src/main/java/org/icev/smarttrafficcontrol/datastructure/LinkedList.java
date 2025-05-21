@@ -77,11 +77,11 @@ public class LinkedList<T> implements Serializable {
         }
         if (this.isEmpty()) {
             this.head = list.head;
-            this.tail = list.tail;  // Atualiza tail também
+            this.tail = list.tail;
             this.size = list.size;
         } else {
-            tail.setNext(list.head);  // Usa tail direto para encadear, sem precisar do while
-            this.tail = list.tail;    // Atualiza tail para o tail da lista concatenada
+            tail.setNext(list.head);
+            this.tail = list.tail;
             this.size += list.size;
         }
     }

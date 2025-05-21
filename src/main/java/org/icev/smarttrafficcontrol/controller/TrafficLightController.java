@@ -2,8 +2,10 @@ package org.icev.smarttrafficcontrol.controller;
 
 import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.Node;
+import org.icev.smarttrafficcontrol.datastructure.Queue;
 import org.icev.smarttrafficcontrol.model.SimConfig;
 import org.icev.smarttrafficcontrol.model.TrafficLight;
+import org.icev.smarttrafficcontrol.model.Vehicle;
 
 import java.io.Serializable;
 
@@ -23,10 +25,10 @@ public class TrafficLightController implements Serializable {
         this.modelo = modelo;
     }
 
-    public void update() {
+    public void update(Queue<Vehicle> filaVeiculos) {
         Node<IntersectionController> atual = intersecoes.getHead();
         while (atual != null) {
-            atual.getData().update(modelo); // usa o modelo salvo no próprio controller
+            atual.getData().update(modelo, filaVeiculos);
             atual = atual.getNext();
         }
     }

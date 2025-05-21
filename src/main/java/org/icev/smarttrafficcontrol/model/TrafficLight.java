@@ -28,28 +28,24 @@ public class TrafficLight implements Serializable {
         this.timer = 0;
     }
 
-    public void updateCycle(int verde, int amarelo, int vermelho) {
-        this.duracaoVerde = verde;
-        this.duracaoAmarelo = amarelo;
-        this.duracaoVermelho = vermelho;
-
+    public void updateCycle(int cicloVerde, int cicloAmarelo, int cicloVermelho) {
         timer++;
 
         switch (state) {
             case GREEN:
-                if (timer >= duracaoVerde) {
+                if (timer >= cicloVerde) {
                     state = State.YELLOW;
                     timer = 0;
                 }
                 break;
             case YELLOW:
-                if (timer >= duracaoAmarelo) {
+                if (timer >= cicloAmarelo) {
                     state = State.RED;
                     timer = 0;
                 }
                 break;
             case RED:
-                if (timer >= duracaoVermelho) {
+                if (timer >= cicloVermelho) {
                     state = State.GREEN;
                     timer = 0;
                 }

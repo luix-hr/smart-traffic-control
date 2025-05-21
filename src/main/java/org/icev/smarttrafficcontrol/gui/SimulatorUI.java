@@ -30,10 +30,10 @@ public class SimulatorUI extends JFrame {
     private double minLat = Double.MAX_VALUE, maxLat = -Double.MAX_VALUE;
     private double minLon = Double.MAX_VALUE, maxLon = -Double.MAX_VALUE;
 
-    public SimulatorUI(String caminhoMapa, Simulator simulator) {
+    public SimulatorUI(Graph grafo, LinkedList<IntersectionController> intersecoes, Simulator simulator) {
         this.simulator = simulator;
-        this.grafo = MapLoader.carregarJSON(caminhoMapa);
-        this.intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, simulator.getConfig());
+        this.grafo = grafo;
+        this.intersecoes = intersecoes;
         calcularLimitesMapa();
         construirUI();
     }
@@ -209,5 +209,9 @@ public class SimulatorUI extends JFrame {
             v = v.getNext();
         }
         areaVeiculos.setText(sb.toString());
+    }
+
+    public void repaintMapa() {
+        painelMapa.repaint();
     }
 }

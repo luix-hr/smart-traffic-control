@@ -12,7 +12,7 @@ public class SimConfig implements Serializable {
     private int veiculosPorCiclo = 3;
 
     private boolean modoPico = false;
-    private int horarioAtual = 12; // hora do dia (0-23)
+    private int horarioAtual = 12;
     private int horaInicioPico = 7;
     private int horaFimPico = 9;
 

@@ -35,7 +35,7 @@ public class Simulator implements Serializable {
         this.controladorSemaforos = new TrafficLightController(intersecoes, config);
         this.stats = new SimulationStats();
         this.running = false;
-        this.ui = new SimulatorUI(caminhoMapa, this); // passa referência
+        this.ui = new SimulatorUI(grafo, intersecoes, this);
     }
 
     public void setModeloSemaforo(int modelo) {
@@ -44,18 +44,18 @@ public class Simulator implements Serializable {
 
     public void start(int cycles, int veiculosPorCiclo, int modelo) {
         running = true;
-
         geradorVeiculos.gerarMultiplosVeiculos(config.getVeiculosPorCiclo(), filaVeiculos);
+
         for (int i = 0; i < cycles && running; i++) {
             System.out.println("\nCiclo: " + (i + 1));
 
-            controladorSemaforos.update();
+            controladorSemaforos.update(filaVeiculos);
+            ui.repaintMapa();
             mostrarEstadoSemaforos();
 
             simularMovimentoVeiculos();
             stats.printCiclo(i + 1);
 
-            // Atualizar interface com lista de veículos
             LinkedList<Vehicle> listaVeiculos = new LinkedList<>();
             Queue<Vehicle> temp = new Queue<>();
 

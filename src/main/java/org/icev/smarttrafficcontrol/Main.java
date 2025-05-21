@@ -15,25 +15,21 @@ public class Main {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // Configurações iniciais
             SimConfig config = new SimConfig();
-            config.setCicloVerde(5);
-            config.setCicloAmarelo(2);
-            config.setCicloVermelho(5);
+            config.setCicloVerde(10);
+            config.setCicloAmarelo(5);
+            config.setCicloVermelho(10);
             config.setModoPico(false);
             config.setHorarioAtual(14);
 
-            // Carrega mapa e configura simulação
             String caminho = "saves/dados/CentroTeresinaPiauíBrazil.json";
             Graph grafo = MapLoader.carregarJSON(caminho);
             LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
 
-            // Inicializa simulador com integração visual
             Simulator simulator = new Simulator(grafo, config, intersecoes, caminho);
-            SimulatorUI ui = new SimulatorUI(caminho, simulator);
-            simulator.setUI(ui);
+//            SimulatorUI ui = new SimulatorUI(caminho, simulator);
+//            simulator.setUI(ui);
 
-            // Inicia com parâmetros padrão
 //            simulator.setModeloSemaforo(1);
 //            config.setVeiculosPorCiclo(10);
 //            simulator.start(30, 10, 1);
@@ -42,9 +38,9 @@ public class Main {
 
     public static void main2(String[] args) {
         SimConfig config = new SimConfig();
-        config.setCicloVerde(2);
+        config.setCicloVerde(4);
         config.setCicloAmarelo(2);
-        config.setCicloVermelho(5);
+        config.setCicloVermelho(4);
         config.setModoPico(false);
         config.setHorarioAtual(14);
 
@@ -70,8 +66,8 @@ public class Main {
                     Graph grafo = MapLoader.carregarJSON(caminho);
                     LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
                     simulator = new Simulator(grafo, config, intersecoes, caminho);
-                    SimulatorUI ui = new SimulatorUI(caminho, simulator);
-                    simulator.setUI(ui);
+//                    SimulatorUI ui = new SimulatorUI(caminho, simulator);
+//                    simulator.setUI(ui);
                     carregado = true;
 
                     System.out.println("\nEscolha o modelo de controle de semáforo:");
