@@ -24,27 +24,23 @@ public class Main {
             config.setHorarioAtual(14);
 
             // Carrega mapa e configura simulação
-            String caminho = "saves/dados/exemplo.json";
+            String caminho = "saves/dados/CentroTeresinaPiauíBrazil.json";
             Graph grafo = MapLoader.carregarJSON(caminho);
             LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
 
-            // Inicializa interface
-            SimulatorUI ui = new SimulatorUI(caminho);
-
             // Inicializa simulador com integração visual
             Simulator simulator = new Simulator(grafo, config, intersecoes, caminho);
-            simulator.setOnUpdate(vehicles -> ui.atualizar(vehicles));
+            SimulatorUI ui = new SimulatorUI(caminho, simulator);
+            simulator.setUI(ui);
 
             // Inicia com parâmetros padrão
-            simulator.setModeloSemaforo(1);
-            config.setVeiculosPorCiclo(10);
-            simulator.start(30, 10, 1);
+//            simulator.setModeloSemaforo(1);
+//            config.setVeiculosPorCiclo(10);
+//            simulator.start(30, 10, 1);
         });
     }
 
-
     public static void main2(String[] args) {
-
         SimConfig config = new SimConfig();
         config.setCicloVerde(2);
         config.setCicloAmarelo(2);
@@ -74,9 +70,10 @@ public class Main {
                     Graph grafo = MapLoader.carregarJSON(caminho);
                     LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
                     simulator = new Simulator(grafo, config, intersecoes, caminho);
+                    SimulatorUI ui = new SimulatorUI(caminho, simulator);
+                    simulator.setUI(ui);
                     carregado = true;
 
-                    // Solicita heurística do semáforo
                     System.out.println("\nEscolha o modelo de controle de semáforo:");
                     System.out.println("1 - Ciclo fixo (Modelo 1)");
                     System.out.println("2 - Baseado em fila (Modelo 2)");

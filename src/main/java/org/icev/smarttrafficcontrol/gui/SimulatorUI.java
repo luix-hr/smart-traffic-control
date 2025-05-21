@@ -4,11 +4,9 @@ import org.icev.smarttrafficcontrol.controller.IntersectionController;
 import org.icev.smarttrafficcontrol.controller.Simulator;
 import org.icev.smarttrafficcontrol.datastructure.LinkedList;
 import org.icev.smarttrafficcontrol.datastructure.Node;
-import org.icev.smarttrafficcontrol.datastructure.Queue;
 import org.icev.smarttrafficcontrol.datastructure.graph.Edge;
 import org.icev.smarttrafficcontrol.datastructure.graph.Graph;
 import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
-import org.icev.smarttrafficcontrol.model.SimConfig;
 import org.icev.smarttrafficcontrol.model.TrafficLight;
 import org.icev.smarttrafficcontrol.model.Vehicle;
 import org.icev.smarttrafficcontrol.service.MapLoader;
@@ -16,12 +14,10 @@ import org.icev.smarttrafficcontrol.service.MapLoader;
 import javax.swing.*;
 import java.awt.*;
 
-
 public class SimulatorUI extends JFrame {
     private Graph grafo;
     private LinkedList<IntersectionController> intersecoes;
     private Simulator simulator;
-    private SimConfig config;
 
     private JPanel painelMapa;
     private JTextArea areaVeiculos;
@@ -29,31 +25,27 @@ public class SimulatorUI extends JFrame {
     private JTextField campoVeiculos;
     private JButton iniciarBtn, pausarBtn, pararBtn, salvarBtn, carregarBtn;
 
-    private Queue<Vehicle> listaVeiculos = new Queue<>();
+    private LinkedList<Vehicle> listaVeiculos = new LinkedList<>();
 
-    public SimulatorUI(String caminhoMapa) {
-        config = new SimConfig();
-        config.setCicloVerde(5);
-        config.setCicloAmarelo(2);
-        config.setCicloVermelho(5);
-        config.setVeiculosPorCiclo(10);
-        config.setModoPico(false);
-        config.setHorarioAtual(14);
+    private double minLat = Double.MAX_VALUE, maxLat = -Double.MAX_VALUE;
+    private double minLon = Double.MAX_VALUE, maxLon = -Double.MAX_VALUE;
 
+    public SimulatorUI(String caminhoMapa, Simulator simulator) {
+        this.simulator = simulator;
         this.grafo = MapLoader.carregarJSON(caminhoMapa);
-        this.intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
-        this.simulator = new Simulator(grafo, config, intersecoes,caminhoMapa);
-
+        this.intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, simulator.getConfig());
+        calcularLimitesMapa();
         construirUI();
     }
 
     private void construirUI() {
         setTitle("Simulador de Trânsito Visual");
-        setSize(1200, 800);
+        setSize(1000, 800);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        setLocationRelativeTo(null);
+        setVisible(true);
 
-        // Painel mapa
         painelMapa = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -61,13 +53,11 @@ public class SimulatorUI extends JFrame {
                 desenharMapa((Graphics2D) g);
             }
         };
-        painelMapa.setPreferredSize(new Dimension(800, 700));
+        painelMapa.setPreferredSize(new Dimension(700, 700));
         add(painelMapa, BorderLayout.CENTER);
 
-        // Painel lateral com controles e status
         JPanel painelDireito = new JPanel(new BorderLayout());
 
-        // Controles
         JPanel painelControles = new JPanel(new FlowLayout());
         painelControles.add(new JLabel("Modelo:"));
         modeloCombo = new JComboBox<>(new String[]{"1 - Fixo", "2 - Fila", "3 - Pico"});
@@ -91,15 +81,14 @@ public class SimulatorUI extends JFrame {
 
         painelDireito.add(painelControles, BorderLayout.NORTH);
 
-        // Área veículos
         areaVeiculos = new JTextArea();
         areaVeiculos.setEditable(false);
         JScrollPane scrollVeiculos = new JScrollPane(areaVeiculos);
+        scrollVeiculos.setPreferredSize(new Dimension(300, 700));
         painelDireito.add(scrollVeiculos, BorderLayout.CENTER);
 
         add(painelDireito, BorderLayout.EAST);
 
-        // Ações dos botões
         iniciarBtn.addActionListener(e -> iniciarSimulacao());
         pausarBtn.addActionListener(e -> simulator.pause());
         pararBtn.addActionListener(e -> simulator.stop());
@@ -121,9 +110,33 @@ public class SimulatorUI extends JFrame {
                 }
             }
         });
+    }
 
-        setLocationRelativeTo(null);
-        setVisible(true);
+    private void calcularLimitesMapa() {
+        Node<Vertex> v = grafo.getVertices().getHead();
+        while (v != null) {
+            Vertex vertice = v.getData();
+            double lat = vertice.getLatitude();
+            double lon = vertice.getLongitude();
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+            if (lon < minLon) minLon = lon;
+            if (lon > maxLon) maxLon = lon;
+            v = v.getNext();
+        }
+    }
+
+    private Point mapear(Vertex v) {
+        int largura = painelMapa.getWidth() - 100;
+        int altura = painelMapa.getHeight() - 100;
+
+        double lon = v.getLongitude();
+        double lat = v.getLatitude();
+
+        double x = (lon - minLon) / (maxLon - minLon) * largura + 50;
+        double y = (maxLat - lat) / (maxLat - minLat) * altura + 50;
+
+        return new Point((int) x, (int) y);
     }
 
     private void desenharMapa(Graphics2D g) {
@@ -159,31 +172,27 @@ public class SimulatorUI extends JFrame {
         }
 
         g.setColor(Color.BLUE);
-        for (Vehicle veiculo : listaVeiculos) {
+        Node<Vehicle> veiculoNode = listaVeiculos.getHead();
+        while (veiculoNode != null) {
+            Vehicle veiculo = veiculoNode.getData();
             Vertex destino = veiculo.getProximoDestino();
             if (destino != null) {
                 Point p = mapear(destino);
                 g.fillOval(p.x - 6, p.y - 6, 12, 12);
             }
+            veiculoNode = veiculoNode.getNext();
         }
-    }
-
-    private Point mapear(Vertex v) {
-        double x = (v.getLongitude() + 1) * 300;
-        double y = (v.getLatitude() + 1) * 300;
-        return new Point((int) x, (int) y);
     }
 
     private void iniciarSimulacao() {
         int modelo = modeloCombo.getSelectedIndex() + 1;
         simulator.setModeloSemaforo(modelo);
         int veiculosPorCiclo = Integer.parseInt(campoVeiculos.getText());
-        config.setVeiculosPorCiclo(veiculosPorCiclo);
-
+        simulator.getConfig().setVeiculosPorCiclo(veiculosPorCiclo);
         new Thread(() -> simulator.start(9999, veiculosPorCiclo, modelo)).start();
     }
 
-    public void atualizar(Queue<Vehicle> veiculos, LinkedList<IntersectionController> intersecoes){
+    public void atualizar(LinkedList<Vehicle> veiculos, LinkedList<IntersectionController> intersecoes) {
         this.listaVeiculos = veiculos;
         atualizarPainelVeiculos();
         painelMapa.repaint();
@@ -191,10 +200,13 @@ public class SimulatorUI extends JFrame {
 
     private void atualizarPainelVeiculos() {
         StringBuilder sb = new StringBuilder();
-        for (Vehicle v : listaVeiculos) {
-            sb.append(v.getId()).append(" -> destino atual: ");
-            Vertex d = v.getProximoDestino();
+        Node<Vehicle> v = listaVeiculos.getHead();
+        while (v != null) {
+            Vehicle veiculo = v.getData();
+            sb.append(veiculo.getId()).append(" -> destino atual: ");
+            Vertex d = veiculo.getProximoDestino();
             sb.append(d != null ? d.getId() : "chegou ao destino").append("\n");
+            v = v.getNext();
         }
         areaVeiculos.setText(sb.toString());
     }

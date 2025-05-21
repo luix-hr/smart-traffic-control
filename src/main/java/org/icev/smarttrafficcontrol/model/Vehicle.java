@@ -53,6 +53,6 @@ public class Vehicle implements Serializable {
         if (!rota.isEmpty()) {
             rota.dequeue();
         }
-        incrementarTempo();  // Conta o tempo de movimento também
+        incrementarTempo();
     }
 }
