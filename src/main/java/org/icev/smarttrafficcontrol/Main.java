@@ -16,9 +16,9 @@ public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             SimConfig config = new SimConfig();
-            config.setCicloVerde(10);
-            config.setCicloAmarelo(5);
-            config.setCicloVermelho(10);
+            config.setCicloVerde(4);
+            config.setCicloAmarelo(2);
+            config.setCicloVermelho(4);
             config.setModoPico(false);
             config.setHorarioAtual(14);
 
