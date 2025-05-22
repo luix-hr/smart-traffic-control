@@ -22,7 +22,8 @@ public class IntersectionController implements Serializable {
 
     private SimConfig config;
 
-    public IntersectionController(String id, LinkedList<TrafficLight> grupo1, LinkedList<TrafficLight> grupo2, SimConfig config) {
+    public IntersectionController(String id, LinkedList<TrafficLight> grupo1,
+                                  LinkedList<TrafficLight> grupo2, SimConfig config) {
         this.id = id;
         this.grupo1 = grupo1;
         this.grupo2 = grupo2;
@@ -30,7 +31,6 @@ public class IntersectionController implements Serializable {
         this.fase = 0;
         this.amareloAtivo = false;
         this.timer = 0;
-
         inicializarEstados();
     }
 
@@ -48,84 +48,57 @@ public class IntersectionController implements Serializable {
         }
     }
 
-    private void updateFixo() {
-        synchronized (this) {
-            LinkedList<TrafficLight> grupoAtual = getGrupoAtual();
-            LinkedList<TrafficLight> grupoOposto = getGrupoProximo();
+    public void updateFixo() {
+        LinkedList<TrafficLight> grupoAtual = (fase == 0) ? grupo1 : grupo2;
+        LinkedList<TrafficLight> grupoOposto = (fase == 0) ? grupo2 : grupo1;
 
-            if (!amareloAtivo) {
-                if (timer >= config.getCicloVerde()) {
-                    setGrupoState(grupoOposto, TrafficLight.State.RED);
-                    setGrupoState(grupoAtual, TrafficLight.State.YELLOW);
-                    amareloAtivo = true;
-                    timer = 0;
-                }
-            } else {
-                if (timer >= config.getCicloAmarelo()) {
-                    setGrupoState(grupoAtual, TrafficLight.State.RED);
-                    setGrupoState(grupoOposto, TrafficLight.State.GREEN);
-                    fase = (fase == 0) ? 1 : 0;
-                    amareloAtivo = false;
-                    timer = 0;
-                }
+        if (!amareloAtivo) {
+            if (timer >= config.getCicloVerde()) {
+                setGrupoState(grupoAtual, TrafficLight.State.YELLOW);
+                amareloAtivo = true;
+                timer = 0;
+                System.out.println("🟨 Interseção " + id + " mudou de VERDE para AMARELO.");
             }
-            timer++;
+        } else {
+            if (timer >= config.getCicloAmarelo()) {
+                setGrupoState(grupoAtual, TrafficLight.State.RED);
+                setGrupoState(grupoOposto, TrafficLight.State.GREEN);
+                amareloAtivo = false;
+                fase = (fase == 0) ? 1 : 0;
+                timer = 0;
+                System.out.println("🔴🟢 Interseção " + id + " trocou grupos.");
+            }
         }
+
+        timer++;
     }
 
     private void updateBaseadoEmFila(Queue<Vehicle> filaVeiculos) {
         updateFixo();
     }
 
-
     private void updateEconomico() {
         updateFixo();
     }
 
-
     private void setGrupoState(LinkedList<TrafficLight> grupo, TrafficLight.State estado) {
-        System.out.println("\n=== Definindo Grupo " + (grupo == grupo1 ? "1" : "2") + " para " + estado + " ===");
         Node<TrafficLight> atual = grupo.getHead();
         while (atual != null) {
-            System.out.println("Semáforo " + atual.getData().getId() + " → " + estado);
             atual.getData().setState(estado);
             atual = atual.getNext();
         }
-    }
-
-    private boolean validarEstadoGrupo(LinkedList<TrafficLight> grupo, TrafficLight.State estado) {
-        Node<TrafficLight> atual = grupo.getHead();
-        while (atual != null) {
-            if (atual.getData().getState() != estado) {
-                System.err.println("ERRO: Semáforo " + atual.getData().getId()
-                        + " está em estado inconsistente (" + estado + " esperado)");
-                return false;
-            }
-            atual = atual.getNext();
-        }
-        return true;
-    }
-
-
-    private LinkedList<TrafficLight> getGrupoAtual() {
-        return (fase == 0) ? grupo1 : grupo2;
-    }
-
-
-    private LinkedList<TrafficLight> getGrupoProximo() {
-        return (fase == 0) ? grupo2 : grupo1;
     }
 
     public String getId() {
         return id;
     }
 
-    public LinkedList<TrafficLight> getGrupo2() {
-        return grupo2;
-    }
-
     public LinkedList<TrafficLight> getGrupo1() {
         return grupo1;
+    }
+
+    public LinkedList<TrafficLight> getGrupo2() {
+        return grupo2;
     }
 
     public LinkedList<TrafficLight> getTodosSemaforos() {

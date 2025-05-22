@@ -112,6 +112,10 @@ public class LinkedList<T> implements Serializable {
         return head;
     }
 
+    public Node<T> getTail() {
+        return tail;
+    }
+
     public int getSize(){
         return size;
     }

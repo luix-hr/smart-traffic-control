@@ -160,7 +160,7 @@ public class SimulatorUI extends JFrame {
         while (v != null) {
             Vertex vertex = v.getData();
             Point p = mapear(vertex);
-            TrafficLight tl = vertex.getTrafficLight();
+            TrafficLight tl = encontrarSemaforoPorVertice(vertex);
             if (tl != null) {
                 switch (tl.getState()) {
                     case GREEN -> g.setColor(Color.GREEN);
@@ -214,6 +214,22 @@ public class SimulatorUI extends JFrame {
             v = v.getNext();
         }
         areaVeiculos.setText(sb.toString());
+    }
+
+    private TrafficLight encontrarSemaforoPorVertice(Vertex v) {
+        Node<IntersectionController> atual = intersecoes.getHead();
+        while (atual != null) {
+            IntersectionController ic = atual.getData();
+            Node<TrafficLight> sem = ic.getTodosSemaforos().getHead();
+            while (sem != null) {
+                if (sem.getData().getVinculo() != null && sem.getData().getVinculo().equals(v)) {
+                    return sem.getData();
+                }
+                sem = sem.getNext();
+            }
+            atual = atual.getNext();
+        }
+        return v.getTrafficLight();
     }
 
     public void repaintMapa() {

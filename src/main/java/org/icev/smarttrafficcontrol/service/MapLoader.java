@@ -79,22 +79,23 @@ public class MapLoader {
 
     public static LinkedList<IntersectionController> criarIntersecoesAutomaticas(Graph grafo, SimConfig config) {
         LinkedList<IntersectionController> intersecoes = new LinkedList<>();
-        Set<String> semaforosAgrupados = new HashSet<>();
+        Set<String> verticesProcessados = new HashSet<>();
 
         Node<Vertex> atual = grafo.getVertices().getHead();
 
         while (atual != null) {
             Vertex centro = atual.getData();
-            TrafficLight semaforoCentro = centro.getTrafficLight();
 
-            if (semaforoCentro != null && !semaforosAgrupados.contains(centro.getId())) {
+            if (centro.getTrafficLight() != null && !verticesProcessados.contains(centro.getId())) {
                 LinkedList<TrafficLight> grupo1 = new LinkedList<>();
                 LinkedList<TrafficLight> grupo2 = new LinkedList<>();
-                Set<String> usados = new HashSet<>();
 
+                TrafficLight semaforoCentro = new TrafficLight("TL_" + centro.getId() + "_CENTRO");
+                semaforoCentro.setVinculo(centro);
                 grupo1.insert(semaforoCentro);
+
+                Set<String> usados = new HashSet<>();
                 usados.add(centro.getId());
-                semaforosAgrupados.add(centro.getId());
 
                 Node<Edge> arestaAtual = grafo.getArestas().getHead();
                 while (arestaAtual != null) {
@@ -109,36 +110,19 @@ public class MapLoader {
                         double angle = Math.toDegrees(Math.atan2(dy, dx));
                         angle = (angle + 360) % 360;
 
+                        TrafficLight novoSemaforo = new TrafficLight("TL_" + centro.getId() + "_" + vizinho.getId());
+                        novoSemaforo.setVinculo(vizinho);
+
                         if ((angle >= 45 && angle < 135) || (angle >= 225 && angle < 315)) {
-                            grupo2.insert(vizinho.getTrafficLight()); // Horizontal
+                            grupo2.insert(novoSemaforo); // Horizontal
                         } else {
-                            grupo1.insert(vizinho.getTrafficLight()); // Vertical
+                            grupo1.insert(novoSemaforo); // Vertical
                         }
 
                         usados.add(vizinho.getId());
-                        semaforosAgrupados.add(vizinho.getId());
                     }
 
                     arestaAtual = arestaAtual.getNext();
-                }
-
-                if (grupo1.isEmpty() && grupo2.getSize() > 1) {
-                    int qtdMover = Math.max(1, grupo2.getSize() / 2);
-                    for (int i = 0; i < qtdMover; i++) {
-                        grupo1.insert(grupo2.removeFirst());
-                    }
-                } else if (grupo2.isEmpty() && grupo1.getSize() > 1) {
-                    int qtdMover = Math.max(1, grupo1.getSize() / 2);
-                    for (int i = 0; i < qtdMover; i++) {
-                        grupo2.insert(grupo1.removeFirst());
-                    }
-                }
-
-                if (grupo2.isEmpty()) {
-                    TrafficLight semaforoExtra = new TrafficLight(centro.getId() + "_extraG2");
-                    semaforoExtra.setVinculo(centro);
-                    grupo2.insert(semaforoExtra);
-                    System.out.println("⚠️ Adicionado semáforo extra no Grupo2 da interseção " + centro.getId());
                 }
 
                 if (grupo1.isEmpty()) {
@@ -148,9 +132,36 @@ public class MapLoader {
                     System.out.println("⚠️ Adicionado semáforo extra no Grupo1 da interseção " + centro.getId());
                 }
 
+                if (grupo2.isEmpty()) {
+                    TrafficLight semaforoExtra = new TrafficLight(centro.getId() + "_extraG2");
+                    semaforoExtra.setVinculo(centro);
+                    grupo2.insert(semaforoExtra);
+                    System.out.println("⚠️ Adicionado semáforo extra no Grupo2 da interseção " + centro.getId());
+                }
+
                 System.out.println("✅ Interseção " + centro.getId() +
                         " - Grupo1: " + grupo1.getSize() +
                         " | Grupo2: " + grupo2.getSize());
+
+                Set<String> idsUnicos = new HashSet<>();
+
+                Node<TrafficLight> node = grupo1.getHead();
+                while (node != null) {
+                    String id = node.getData().getId();
+                    if (!idsUnicos.add(id)) {
+                        throw new IllegalStateException("Semáforo " + id + " está em ambos os grupos!");
+                    }
+                    node = node.getNext();
+                }
+
+                node = grupo2.getHead();
+                while (node != null) {
+                    String id = node.getData().getId();
+                    if (!idsUnicos.add(id)) {
+                        throw new IllegalStateException("Semáforo " + id + " está em múltiplas interseções!");
+                    }
+                    node = node.getNext();
+                }
 
                 IntersectionController intersec = new IntersectionController(
                         "int_" + centro.getId(),
@@ -159,6 +170,7 @@ public class MapLoader {
                         config
                 );
                 intersecoes.insert(intersec);
+                verticesProcessados.add(centro.getId());
             }
 
             atual = atual.getNext();
@@ -166,5 +178,4 @@ public class MapLoader {
 
         return intersecoes;
     }
-
 }
