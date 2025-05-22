@@ -94,8 +94,7 @@ public class Simulator implements Serializable {
             Vertex destino = veiculo.getProximoDestino();
 
             if (destino != null) {
-                TrafficLight semaforo = destino.getTrafficLight();
-                if (semaforo == null || semaforo.getState() == TrafficLight.State.GREEN) {
+                if (podeAvancar(destino)) {
                     System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId());
                     veiculo.mover();
                 } else {
@@ -112,6 +111,29 @@ public class Simulator implements Serializable {
 
         filaVeiculos = proximaFila;
     }
+
+
+    private boolean podeAvancar(Vertex destino) {
+        Node<IntersectionController> atual = intersecoes.getHead();
+
+        while (atual != null) {
+            IntersectionController intersec = atual.getData();
+            LinkedList<TrafficLight> semaforos = intersec.getTodosSemaforos();
+            Node<TrafficLight> node = semaforos.getHead();
+
+            while (node != null) {
+                TrafficLight tl = node.getData();
+                if (tl.getVinculo().equals(destino)) {
+                    return tl.getState() == TrafficLight.State.GREEN;
+                }
+                node = node.getNext();
+            }
+            atual = atual.getNext();
+        }
+
+        return true;
+    }
+
 
     public void pause() {
         running = false;
