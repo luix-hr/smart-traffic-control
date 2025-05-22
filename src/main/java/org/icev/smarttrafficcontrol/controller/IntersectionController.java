@@ -17,6 +17,9 @@ public class IntersectionController implements Serializable {
     private LinkedList<TrafficLight> grupo2;
 
     private int fase;
+    private boolean amareloAtivo;
+    private int timer;
+
     private SimConfig config;
 
     public IntersectionController(String id, LinkedList<TrafficLight> grupo1, LinkedList<TrafficLight> grupo2, SimConfig config) {
@@ -25,6 +28,8 @@ public class IntersectionController implements Serializable {
         this.grupo2 = grupo2;
         this.config = config;
         this.fase = 0;
+        this.amareloAtivo = false;
+        this.timer = 0;
 
         setGrupoState(grupo1, TrafficLight.State.GREEN);
         setGrupoState(grupo2, TrafficLight.State.RED);
@@ -40,87 +45,83 @@ public class IntersectionController implements Serializable {
     }
 
     private void updateFixo() {
-        int verde = config.getCicloVerde();
-        int amarelo = config.getCicloAmarelo();
-        int vermelho = config.getCicloVermelho();
-
         LinkedList<TrafficLight> grupoAtual = getGrupoAtual();
-        Node<TrafficLight> node = grupoAtual.getHead();
-        while (node != null) {
-            node.getData().updateCycle(verde, amarelo, vermelho);
-            node = node.getNext();
-        }
+        LinkedList<TrafficLight> grupoProximo = getGrupoProximo();
 
-        if (grupoAtualTodosRed(grupoAtual)) alternarFase();
+        if (!amareloAtivo) {
+            if (timer >= config.getCicloVerde()) {
+                setGrupoState(grupoAtual, TrafficLight.State.YELLOW);
+                amareloAtivo = true;
+                timer = 0;
+                System.out.println(id + ": Verde -> Amarelo");
+            }
+        } else {
+            if (timer >= config.getCicloAmarelo()) {
+                setGrupoState(grupoAtual, TrafficLight.State.RED);
+                setGrupoState(grupoProximo, TrafficLight.State.GREEN);
+                fase = (fase == 0) ? 1 : 0;
+                amareloAtivo = false;
+                timer = 0;
+                System.out.println(id + ": Amarelo -> Vermelho/Verde");
+            }
+        }
+        timer++;
     }
 
     private void updateBaseadoEmFila(Queue<Vehicle> filaVeiculos) {
-        int filaGrupo1 = contarVeiculosEsperando(grupo1, filaVeiculos);
-        int filaGrupo2 = contarVeiculosEsperando(grupo2, filaVeiculos);
+        int filaGrupo1 = contarVeiculos(grupo1, filaVeiculos);
+        int filaGrupo2 = contarVeiculos(grupo2, filaVeiculos);
 
-        int verde = config.getCicloVerde();
-        if (fase == 0 && filaGrupo1 > 5) verde += 2;
-        else if (fase == 1 && filaGrupo2 > 5) verde += 2;
+        int tempoVerde = config.getCicloVerde();
+        if (fase == 0 && filaGrupo1 > filaGrupo2) tempoVerde += 2;
+        if (fase == 1 && filaGrupo2 > filaGrupo1) tempoVerde += 2;
 
-        int amarelo = config.getCicloAmarelo();
-        int vermelho = config.getCicloVermelho();
-
-        LinkedList<TrafficLight> grupoAtual = getGrupoAtual();
-        Node<TrafficLight> node = grupoAtual.getHead();
-        while (node != null) {
-            node.getData().updateCycle(verde, amarelo, vermelho);
-            node = node.getNext();
+        if (!amareloAtivo) {
+            if (timer >= tempoVerde) {
+                setGrupoState(getGrupoAtual(), TrafficLight.State.YELLOW);
+                amareloAtivo = true;
+                timer = 0;
+            }
+        } else {
+            if (timer >= config.getCicloAmarelo()) {
+                setGrupoState(getGrupoAtual(), TrafficLight.State.RED);
+                setGrupoState(getGrupoProximo(), TrafficLight.State.GREEN);
+                fase = (fase == 0) ? 1 : 0;
+                amareloAtivo = false;
+                timer = 0;
+            }
         }
-
-        if (grupoAtualTodosRed(grupoAtual)) alternarFase();
+        timer++;
     }
 
     private void updateEconomico() {
-        int verde = config.getCicloVerde();
-        int vermelho = config.getCicloVermelho();
-        int amarelo = config.getCicloAmarelo();
+        int tempoVerde = config.getCicloVerde();
+        if (config.isModoPico()) tempoVerde += 3;
 
-        if (config.isModoPico()) {
-            verde += 3;
-            vermelho = Math.max(vermelho - 1, amarelo + 1);
-        }
-
-        LinkedList<TrafficLight> grupoAtual = getGrupoAtual();
-        Node<TrafficLight> node = grupoAtual.getHead();
-        while (node != null) {
-            node.getData().updateCycle(verde, amarelo, vermelho);
-            node = node.getNext();
-        }
-
-        if (grupoAtualTodosRed(grupoAtual)) alternarFase();
-    }
-
-
-    private boolean grupoAtualTodosRed(LinkedList<TrafficLight> grupo) {
-        Node<TrafficLight> node = grupo.getHead();
-        while (node != null) {
-            if (node.getData().getState() != TrafficLight.State.RED) {
-                return false;
+        if (!amareloAtivo) {
+            if (timer >= tempoVerde) {
+                setGrupoState(getGrupoAtual(), TrafficLight.State.YELLOW);
+                amareloAtivo = true;
+                timer = 0;
             }
-            node = node.getNext();
+        } else {
+            if (timer >= config.getCicloAmarelo()) {
+                setGrupoState(getGrupoAtual(), TrafficLight.State.RED);
+                setGrupoState(getGrupoProximo(), TrafficLight.State.GREEN);
+                fase = (fase == 0) ? 1 : 0;
+                amareloAtivo = false;
+                timer = 0;
+            }
         }
-        return true;
-    }
-
-    private void alternarFase() {
-        LinkedList<TrafficLight> grupoAtual = getGrupoAtual();
-        LinkedList<TrafficLight> proximoGrupo = (fase == 0) ? grupo2 : grupo1;
-
-        setGrupoState(grupoAtual, TrafficLight.State.RED);
-        setGrupoState(proximoGrupo, TrafficLight.State.GREEN);
-        fase = 1 - fase;
+        timer++;
     }
 
     private void setGrupoState(LinkedList<TrafficLight> grupo, TrafficLight.State estado) {
         Node<TrafficLight> atual = grupo.getHead();
+        System.out.println("Atualizando grupo " + (grupo == grupo1 ? "1" : "2") + " para " + estado);
         while (atual != null) {
             atual.getData().setState(estado);
-            atual.getData().resetTimer();
+            System.out.println("Semáforo " + atual.getData().getId() + " definido para " + estado);
             atual = atual.getNext();
         }
     }
@@ -129,24 +130,38 @@ public class IntersectionController implements Serializable {
         return (fase == 0) ? grupo1 : grupo2;
     }
 
-    private int contarVeiculosEsperando(LinkedList<TrafficLight> grupo, Queue<Vehicle> veiculos) {
-        int contador = 0;
-        Node<TrafficLight> s = grupo.getHead();
-        while (s != null) {
-            TrafficLight semaforo = s.getData();
-            Node<Vehicle> v = veiculos.getHead();
-            while (v != null) {
-                Vehicle veiculo = v.getData();
-                if (veiculo.getProximoDestino() == semaforo.getVinculo()
-                        && semaforo.getState() == TrafficLight.State.RED) {
-                    contador++;
-                }
-                v = v.getNext();
+    private boolean grupoEmEstado(LinkedList<TrafficLight> grupo, TrafficLight.State estado) {
+        Node<TrafficLight> node = grupo.getHead();
+        while (node != null) {
+            if (node.getData().getState() != estado) {
+                return false;
             }
-            s = s.getNext();
+            node = node.getNext();
         }
+        return true;
+    }
 
-        return contador;
+    private LinkedList<TrafficLight> getGrupoProximo() {
+        return (fase == 0) ? grupo2 : grupo1;
+    }
+
+    private int contarVeiculos(LinkedList<TrafficLight> grupo, Queue<Vehicle> veiculos) {
+        int count = 0;
+        Node<TrafficLight> node = grupo.getHead();
+        while (node != null) {
+            TrafficLight semaforo = node.getData();
+            Node<Vehicle> vNode = veiculos.getHead();
+            while (vNode != null) {
+                Vehicle v = vNode.getData();
+                if (v.getProximoDestino() == semaforo.getVinculo()
+                        && semaforo.getState() == TrafficLight.State.RED) {
+                    count++;
+                }
+                vNode = vNode.getNext();
+            }
+            node = node.getNext();
+        }
+        return count;
     }
 
     public String getId() {
@@ -158,13 +173,5 @@ public class IntersectionController implements Serializable {
         todos.concat(grupo1);
         todos.concat(grupo2);
         return todos;
-    }
-
-    public LinkedList<TrafficLight> getGrupo1() {
-        return grupo1;
-    }
-
-    public LinkedList<TrafficLight> getGrupo2() {
-        return grupo2;
     }
 }

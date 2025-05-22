@@ -138,11 +138,11 @@ public class LinkedList<T> implements Serializable {
         System.out.println("null");
     }
 
-    public Node removeFirst() {
+    public T removeFirst() {
         if (head == null) throw new IllegalArgumentException("Lista vazia");
         Node<T> temp = head;
         head = head.getNext();
         temp.setNext(null);
-        return temp;
+        return temp.getData();
     }
 }

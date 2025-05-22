@@ -107,13 +107,15 @@ public class MapLoader {
                     else if (e.getTarget().equals(centro)) vizinho = e.getSource();
 
                     if (vizinho != null && vizinho.getTrafficLight() != null && !usados.contains(vizinho.getId())) {
-                        double diffLat = Math.abs(centro.getLatitude() - vizinho.getLatitude());
-                        double diffLon = Math.abs(centro.getLongitude() - vizinho.getLongitude());
+                        double dx = vizinho.getLongitude() - centro.getLongitude();
+                        double dy = vizinho.getLatitude() - centro.getLatitude();
+                        double angle = Math.toDegrees(Math.atan2(dy, dx));
+                        angle = (angle + 360) % 360;
 
-                        if (diffLat > diffLon) {
-                            grupo1.insert(vizinho.getTrafficLight()); // vertical
+                        if ((angle >= 45 && angle < 135) || (angle >= 225 && angle < 315)) {
+                            grupo2.insert(vizinho.getTrafficLight()); // Leste-Oeste
                         } else {
-                            grupo2.insert(vizinho.getTrafficLight()); // horizontal
+                            grupo1.insert(vizinho.getTrafficLight()); // Norte-Sul
                         }
 
                         usados.add(vizinho.getId());
@@ -123,8 +125,30 @@ public class MapLoader {
                     arestaAtual = arestaAtual.getNext();
                 }
 
-                if (!grupo1.isEmpty() || !grupo2.isEmpty()) {
-                    IntersectionController intersec = new IntersectionController("int_" + centro.getId(), grupo1, grupo2, config);
+                if (grupo1.isEmpty() && !grupo2.isEmpty()) {
+                    int move = grupo2.getSize() / 2;
+                    for (int i = 0; i < move; i++) {
+                        grupo1.insert(grupo2.removeFirst());
+                    }
+                } else if (grupo2.isEmpty() && !grupo1.isEmpty()) {
+                    int move = grupo1.getSize() / 2;
+                    for (int i = 0; i < move; i++) {
+                        grupo2.insert(grupo1.removeFirst());
+                    }
+                }
+
+                if (grupo1.isEmpty() || grupo2.isEmpty()) {
+                    System.out.println("Interseção ignorada (grupo vazio): " + centro.getId());
+                    continue;
+                } else {
+                    System.out.println("Interseção " + centro.getId() + " - Grupo1: " + grupo1.getSize() + " | Grupo2: " + grupo2.getSize());
+
+                    IntersectionController intersec = new IntersectionController(
+                            "int_" + centro.getId(),
+                            grupo1,
+                            grupo2,
+                            config
+                    );
                     intersecoes.insert(intersec);
                 }
             }

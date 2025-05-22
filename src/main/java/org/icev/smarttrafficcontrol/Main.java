@@ -22,7 +22,7 @@ public class Main {
             config.setModoPico(false);
             config.setHorarioAtual(14);
 
-            String caminho = "saves/dados/CentroTeresinaPiauíBrazil.json";
+            String caminho = "mapas/CentroTeresinaPiauíBrazil.json";
             Graph grafo = MapLoader.carregarJSON(caminho);
             LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
 

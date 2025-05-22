@@ -23,6 +23,7 @@ public class SimulatorUI extends JFrame {
     private JTextArea areaVeiculos;
     private JComboBox<String> modeloCombo;
     private JTextField campoVeiculos;
+    private JTextField campoCiclo;
     private JButton iniciarBtn, pausarBtn, pararBtn, salvarBtn, carregarBtn;
 
     private LinkedList<Vehicle> listaVeiculos = new LinkedList<>();
@@ -62,6 +63,10 @@ public class SimulatorUI extends JFrame {
         painelControles.add(new JLabel("Modelo:"));
         modeloCombo = new JComboBox<>(new String[]{"1 - Fixo", "2 - Fila", "3 - Pico"});
         painelControles.add(modeloCombo);
+
+        painelControles.add(new JLabel("Ciclos:"));
+        campoCiclo = new JTextField("10",4);
+        painelControles.add(campoCiclo);
 
         painelControles.add(new JLabel("Veículos/ciclo:"));
         campoVeiculos = new JTextField("10", 4);
