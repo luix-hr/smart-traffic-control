@@ -1,8 +1,8 @@
 package org.icev.smarttrafficcontrol.model;
 
-import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
-
 import java.io.Serializable;
+
+import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
 
 public class TrafficLight implements Serializable {
     private static final long serialVersionUID = 1L;
