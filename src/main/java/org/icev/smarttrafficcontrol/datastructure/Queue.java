@@ -1,6 +1,9 @@
 package org.icev.smarttrafficcontrol.datastructure;
 
-public class Queue<T> {
+import java.io.Serializable;
+
+public class Queue<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Node<T> head;
     private Node<T> tail;
 
@@ -21,7 +24,7 @@ public class Queue<T> {
         }
     }
 
-    public T denqueue(){
+    public T dequeue(){
         if (head == null){
             throw new IllegalArgumentException("Fila vazia");
         } else {
@@ -33,6 +36,16 @@ public class Queue<T> {
         }
     }
 
+    public T peek() {
+        if (head == null) {
+            throw new IllegalArgumentException("Fila vazia");
+        }
+        return head.getData();
+    }
+
+    public Node<T> getHead() {
+        return head;
+    }
 
     public void print(){
         Node actual = head;
@@ -44,4 +57,20 @@ public class Queue<T> {
     }
 
 
+    public boolean isEmpty() {
+        if (head == null){
+            return true;
+        }
+        return false;
+    }
+
+    public int getSize() {
+        int count = 0;
+        Node actual = head;
+        while(actual != null){
+            count++;
+            actual = actual.getNext();
+        }
+        return count;
+    }
 }

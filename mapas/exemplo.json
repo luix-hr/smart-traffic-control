@@ -1,0 +1,38 @@
+{
+  "nodes": [
+    { "id": "A", "latitude": 0.0, "longitude": 0.0 },
+    { "id": "B", "latitude": 0.0, "longitude": 1.0 },
+    { "id": "C", "latitude": 0.0, "longitude": 2.0 },
+    { "id": "D", "latitude": 1.0, "longitude": 0.0 },
+    { "id": "E", "latitude": 1.0, "longitude": 1.0 },
+    { "id": "F", "latitude": 1.0, "longitude": 2.0 },
+    { "id": "G", "latitude": 2.0, "longitude": 0.0 },
+    { "id": "H", "latitude": 2.0, "longitude": 1.0 },
+    { "id": "I", "latitude": 2.0, "longitude": 2.0 }
+  ],
+  "edges": [
+    { "id": "A-B", "source": "A", "target": "B", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "B-C", "source": "B", "target": "C", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "D-E", "source": "D", "target": "E", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "E-F", "source": "E", "target": "F", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "G-H", "source": "G", "target": "H", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "H-I", "source": "H", "target": "I", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "A-D", "source": "A", "target": "D", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "D-G", "source": "D", "target": "G", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "B-E", "source": "B", "target": "E", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "E-H", "source": "E", "target": "H", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "C-F", "source": "C", "target": "F", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 },
+    { "id": "F-I", "source": "F", "target": "I", "length": 1.0, "travel_time": 0.0, "oneway": false, "maxspeed": 60 }
+  ],
+  "traffic_lights": [
+    { "id": "A", "latitude": 0.0, "longitude": 0.0, "attributes": { "highway": "traffic_signals" } },
+    { "id": "B", "latitude": 0.0, "longitude": 1.0, "attributes": { "highway": "traffic_signals" } },
+    { "id": "C", "latitude": 0.0, "longitude": 2.0, "attributes": { "highway": "traffic_signals" } },
+    { "id": "D", "latitude": 1.0, "longitude": 0.0, "attributes": { "highway": "traffic_signals" } },
+    { "id": "E", "latitude": 1.0, "longitude": 1.0, "attributes": { "highway": "traffic_signals" } },
+    { "id": "F", "latitude": 1.0, "longitude": 2.0, "attributes": { "highway": "traffic_signals" } },
+    { "id": "G", "latitude": 2.0, "longitude": 0.0, "attributes": { "highway": "traffic_signals" } },
+    { "id": "H", "latitude": 2.0, "longitude": 1.0, "attributes": { "highway": "traffic_signals" } },
+    { "id": "I", "latitude": 2.0, "longitude": 2.0, "attributes": { "highway": "traffic_signals" } }
+  ]
+}

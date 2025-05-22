@@ -1,6 +1,9 @@
 package org.icev.smarttrafficcontrol.datastructure;
 
-public class LinkedList<T> {
+import java.io.Serializable;
+
+public class LinkedList<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Node<T> head;
     private Node<T> tail;
     private int size;
@@ -40,7 +43,21 @@ public class LinkedList<T> {
         size++;
     }
 
-    //Overload
+    public void insertLast(T data) {
+        Node<T> newNode = new Node<>(data);
+        if (head == null) {
+            head = newNode;
+        } else {
+            Node<T> actual = head;
+            while (actual.getNext() != null) {
+                actual = actual.getNext();
+            }
+            actual.setNext(newNode);
+        }
+        size++;
+    }
+
+
     public void insert(final T data){
         Node newNode = new Node<T>(data);
 
@@ -54,23 +71,52 @@ public class LinkedList<T> {
         size++;
     }
 
-    public T remove(T data){
-        if(head == null){
-            throw new IllegalArgumentException("Lista vazia");
+    public void concat(LinkedList<T> list) {
+        if (list == null || list.isEmpty()) {
+            return;
         }
-        if(head.getData() == data){
-            T dataRemoved = head.getData();
-            head = head.getNext();
-            if (head == null) tail = null;
-            size--;
-            return dataRemoved;
+        if (this.isEmpty()) {
+            this.head = list.head;
+            this.tail = list.tail;
+            this.size = list.size;
+        } else {
+            tail.setNext(list.head);
+            this.tail = list.tail;
+            this.size += list.size;
         }
-
-        //falta terminar a logica
-
     }
 
-    public int size(){
+
+    public boolean remove(T data) {
+        if (isEmpty()) return false;
+
+        if (head.getData().equals(data)) {
+            head = head.getNext();
+            size--;
+            return true;
+        }
+
+        Node<T> actual = head;
+        while (actual.getNext() != null && !actual.getNext().getData().equals(data)) {
+            actual = actual.getNext();
+        }
+
+        if (actual.getNext() == null) return false;
+
+        actual.setNext(actual.getNext().getNext());
+        size--;
+        return true;
+    }
+
+    public Node<T> getHead() {
+        return head;
+    }
+
+    public Node<T> getTail() {
+        return tail;
+    }
+
+    public int getSize(){
         return size;
     }
 
@@ -96,4 +142,11 @@ public class LinkedList<T> {
         System.out.println("null");
     }
 
+    public T removeFirst() {
+        if (head == null) throw new IllegalArgumentException("Lista vazia");
+        Node<T> temp = head;
+        head = head.getNext();
+        temp.setNext(null);
+        return temp.getData();
+    }
 }
