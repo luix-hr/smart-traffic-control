@@ -101,7 +101,7 @@ public class TrafficLightController implements Serializable {
         int tamanhoFila = filaVeiculos.getSize();
         int reduzirVermelho = (tamanhoFila > 5) ? 1 : 0;
 
-        int cicloVerde = config.getCicloVerde(); // Verde fixo
+        int cicloVerde = config.getCicloVerde();
         int cicloAmarelo = config.getCicloAmarelo();
         int cicloVermelho = config.getCicloVerde() - reduzirVermelho;
 

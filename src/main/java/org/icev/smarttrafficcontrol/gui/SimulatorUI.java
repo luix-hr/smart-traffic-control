@@ -62,7 +62,7 @@ public class SimulatorUI extends JFrame {
 
         JPanel painelControles = new JPanel(new FlowLayout());
         painelControles.add(new JLabel("Modelo:"));
-        modeloCombo = new JComboBox<>(new String[]{"1 - Fixo", "2 - Fila", "3 - Pico"});
+        modeloCombo = new JComboBox<>(new String[]{"1 - Fixo", "2 - Fila", "3 - Economico"});
         painelControles.add(modeloCombo);
 
         painelControles.add(new JLabel("Ciclos:"));
