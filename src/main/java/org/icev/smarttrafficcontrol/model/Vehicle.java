@@ -1,5 +1,6 @@
 package org.icev.smarttrafficcontrol.model;
 
+import org.icev.smarttrafficcontrol.datastructure.Node;
 import org.icev.smarttrafficcontrol.datastructure.Queue;
 import org.icev.smarttrafficcontrol.datastructure.graph.Vertex;
 
@@ -55,4 +56,18 @@ public class Vehicle implements Serializable {
         }
         incrementarTempo();
     }
+
+    public String rotaComoString() {
+        StringBuilder sb = new StringBuilder();
+        Node<Vertex> atual = rota.getHead();
+
+        while (atual != null) {
+            sb.append(atual.getData().getId()).append(" -> ");
+            atual = atual.getNext();
+        }
+
+        sb.append("FIM");
+        return sb.toString();
+    }
+
 }

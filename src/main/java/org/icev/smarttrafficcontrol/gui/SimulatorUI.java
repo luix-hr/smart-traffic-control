@@ -21,6 +21,7 @@ public class SimulatorUI extends JFrame {
 
     private JPanel painelMapa;
     private JTextArea areaVeiculos;
+    private JTextArea areaLogs;
     private JComboBox<String> modeloCombo;
     private JTextField campoVeiculos;
     private JTextField campoCiclo;
@@ -65,7 +66,7 @@ public class SimulatorUI extends JFrame {
         painelControles.add(modeloCombo);
 
         painelControles.add(new JLabel("Ciclos:"));
-        campoCiclo = new JTextField("10",4);
+        campoCiclo = new JTextField("40",4);
         painelControles.add(campoCiclo);
 
         painelControles.add(new JLabel("Veículos/ciclo:"));
@@ -89,10 +90,17 @@ public class SimulatorUI extends JFrame {
         areaVeiculos = new JTextArea();
         areaVeiculos.setEditable(false);
         JScrollPane scrollVeiculos = new JScrollPane(areaVeiculos);
-        scrollVeiculos.setPreferredSize(new Dimension(300, 700));
+        scrollVeiculos.setPreferredSize(new Dimension(200, 200));
         painelDireito.add(scrollVeiculos, BorderLayout.CENTER);
 
         add(painelDireito, BorderLayout.EAST);
+
+        areaLogs = new JTextArea();
+        areaLogs.setEditable(false);
+        JScrollPane scrollLogs = new JScrollPane(areaLogs);
+        scrollLogs.setPreferredSize(new Dimension(200, 500));
+
+        painelDireito.add(scrollLogs, BorderLayout.SOUTH);
 
         iniciarBtn.addActionListener(e -> iniciarSimulacao());
         pausarBtn.addActionListener(e -> simulator.pause());
@@ -193,8 +201,9 @@ public class SimulatorUI extends JFrame {
         int modelo = modeloCombo.getSelectedIndex() + 1;
         simulator.setModeloSemaforo(modelo);
         int veiculosPorCiclo = Integer.parseInt(campoVeiculos.getText());
+        int ciclos = Integer.parseInt(campoCiclo.getText());
         simulator.getConfig().setVeiculosPorCiclo(veiculosPorCiclo);
-        new Thread(() -> simulator.start(9999, veiculosPorCiclo, modelo)).start();
+        new Thread(() -> simulator.start(999, veiculosPorCiclo, modelo)).start();
     }
 
     public void atualizar(LinkedList<Vehicle> veiculos, LinkedList<IntersectionController> intersecoes) {
@@ -204,16 +213,16 @@ public class SimulatorUI extends JFrame {
     }
 
     private void atualizarPainelVeiculos() {
-        StringBuilder sb = new StringBuilder();
-        Node<Vehicle> v = listaVeiculos.getHead();
-        while (v != null) {
-            Vehicle veiculo = v.getData();
-            sb.append(veiculo.getId()).append(" -> destino atual: ");
-            Vertex d = veiculo.getProximoDestino();
-            sb.append(d != null ? d.getId() : "chegou ao destino").append("\n");
-            v = v.getNext();
-        }
-        areaVeiculos.setText(sb.toString());
+//        StringBuilder sb = new StringBuilder();
+//        Node<Vehicle> v = listaVeiculos.getHead();
+//        while (v != null) {
+//            Vehicle veiculo = v.getData();
+//            sb.append(veiculo.getId()).append(" -> destino atual: ");
+//            Vertex d = veiculo.getProximoDestino();
+//            sb.append(d != null ? d.getId() : "chegou ao destino").append("\n");
+//            v = v.getNext();
+//        }
+//        areaVeiculos.setText(sb.toString());
     }
 
     private TrafficLight encontrarSemaforoPorVertice(Vertex v) {
@@ -231,6 +240,14 @@ public class SimulatorUI extends JFrame {
         }
         return v.getTrafficLight();
     }
+
+    public void log(String mensagem) {
+        SwingUtilities.invokeLater(() -> {
+            areaLogs.append(mensagem + "\n");
+            areaLogs.setCaretPosition(areaLogs.getDocument().getLength());
+        });
+    }
+
 
     public void repaintMapa() {
         painelMapa.repaint();

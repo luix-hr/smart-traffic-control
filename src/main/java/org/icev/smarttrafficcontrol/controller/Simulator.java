@@ -30,12 +30,13 @@ public class Simulator implements Serializable {
         this.grafo = grafo;
         this.config = config;
         this.intersecoes = intersecoes;
-        this.geradorVeiculos = new VehicleGenerator(grafo);
+        this.ui = new SimulatorUI(grafo, intersecoes, this);
+        this.geradorVeiculos = new VehicleGenerator(grafo, ui);
         this.filaVeiculos = new Queue<>();
         this.controladorSemaforos = new TrafficLightController(intersecoes, config);
         this.stats = new SimulationStats();
         this.running = false;
-        this.ui = new SimulatorUI(grafo, intersecoes, this);
+
     }
 
     public void setModeloSemaforo(int modelo) {
@@ -47,7 +48,8 @@ public class Simulator implements Serializable {
         geradorVeiculos.gerarMultiplosVeiculos(config.getVeiculosPorCiclo(), filaVeiculos);
 
         for (int i = 0; i < cycles && running; i++) {
-            System.out.println("\nCiclo: " + (i + 1));
+            System.out.println("\n🌀 Ciclo: " + (i + 1));
+            if (ui != null) ui.log("\n🌀 Ciclo: " + (i + 1));
 
             controladorSemaforos.update(filaVeiculos);
             ui.repaintMapa();
@@ -55,6 +57,13 @@ public class Simulator implements Serializable {
 
             simularMovimentoVeiculos();
             stats.printCiclo(i + 1);
+
+            if (filaVeiculos.isEmpty()) {
+                System.out.println("✅ Todos os veículos chegaram ao destino. Simulação pausada.");
+                if (ui != null) ui.log("✅ Todos os veículos chegaram ao destino. Simulação pausada.");
+                pause();
+                break;
+            }
 
             LinkedList<Vehicle> listaVeiculos = new LinkedList<>();
             Queue<Vehicle> temp = new Queue<>();
@@ -74,8 +83,9 @@ public class Simulator implements Serializable {
             }
         }
 
-        stats.imprimirResumo();
+        stats.imprimirResumo(ui);
     }
+
 
     private void mostrarEstadoSemaforos() {
         LinkedList<TrafficLight> lista = controladorSemaforos.getTodosSemaforos();
@@ -95,16 +105,22 @@ public class Simulator implements Serializable {
 
             if (destino != null) {
                 if (podeAvancar(destino)) {
-                    System.out.println("Veículo " + veiculo.getId() + " movendo-se para " + destino.getId());
+                    String msg = "➡️  " + veiculo.getId() + " movendo-se para " + destino.getId();
+                    System.out.println(msg);
+                    if (ui != null) ui.log(msg);
                     veiculo.mover();
                 } else {
-                    System.out.println("Veículo " + veiculo.getId() + " aguardando sinal verde em " + destino.getId());
+                    String msg = "🚦 " + veiculo.getId() + " aguardando sinal verde em " + destino.getId();
+                    System.out.println(msg);
+                    if (ui != null) ui.log(msg);
                     veiculo.incrementarEspera();
                     veiculo.incrementarTempo();
                 }
                 proximaFila.enqueue(veiculo);
             } else {
-                System.out.println("Veículo " + veiculo.getId() + " chegou ao destino.");
+                String msg = "🏁 " + veiculo.getId() + " chegou ao destino.";
+                System.out.println(msg);
+                if (ui != null) ui.log(msg);
                 stats.registrarViagem(veiculo.getTempoTotal(), veiculo.getTempoParado());
             }
         }

@@ -27,12 +27,6 @@ public class Main {
             LinkedList<IntersectionController> intersecoes = MapLoader.criarIntersecoesAutomaticas(grafo, config);
 
             Simulator simulator = new Simulator(grafo, config, intersecoes, caminho);
-//            SimulatorUI ui = new SimulatorUI(caminho, simulator);
-//            simulator.setUI(ui);
-
-//            simulator.setModeloSemaforo(1);
-//            config.setVeiculosPorCiclo(10);
-//            simulator.start(30, 10, 1);
         });
     }
 

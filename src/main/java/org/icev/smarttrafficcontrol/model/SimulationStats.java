@@ -2,6 +2,7 @@ package org.icev.smarttrafficcontrol.model;
 
 import java.io.Serializable;
 import org.icev.smarttrafficcontrol.datastructure.*;
+import org.icev.smarttrafficcontrol.gui.SimulatorUI;
 
 public class SimulationStats implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -28,7 +29,7 @@ public class SimulationStats implements Serializable {
 
         viagens.insert(tempoViagem);
         esperas.insert(tempoEspera);
-        if (tempoEspera > 3) veiculosComEsperaAlta++;
+        if (tempoEspera > 10) veiculosComEsperaAlta++;
     }
 
     public double getIndiceCongestionamento() {
@@ -66,14 +67,20 @@ public class SimulationStats implements Serializable {
         return consumoEnergetico;
     }
 
-    public void imprimirResumo() {
-        System.out.println("\n======== ESTATISTICAS DA SIMULACAO ========");
-        System.out.println("Total de veiculos: " + totalVeiculos);
-        System.out.printf("Tempo medio de viagem: %.2f ciclos\n", getTempoMedioViagem());
-        System.out.printf("Tempo medio de espera: %.2f ciclos\n", getTempoMedioEspera());
-        System.out.printf("Consumo energetico total: %.2f unidades\n", consumoEnergetico);
-        System.out.printf("Indice de congestionamento: %.2f%%\n", getIndiceCongestionamento() * 100);
-        System.out.println("===========================================");
+    public void imprimirResumo(SimulatorUI ui) {
+            String resumo = "\n======== ESTATISTICAS DA SIMULACAO ========\n" +
+                    "Total de viagens concluídas: " + totalVeiculos + "\n" +
+                    "Tempo medio de viagem: " + getTempoMedioViagem() + "\n" +
+                    "Tempo medio de espera: " + getTempoMedioEspera() + "\n" +
+                    "Indice de congestionamento: " + (getIndiceCongestionamento() * 100)  + "\n" +
+                    "Consumo energetico total: " + consumoEnergetico + "\n";
+
+            System.out.println(resumo);
+            if (ui != null) {
+                ui.log(resumo);
+            }
+
+
     }
 
     public void resetar() {

@@ -3,6 +3,7 @@ package org.icev.smarttrafficcontrol.controller;
 import org.icev.smarttrafficcontrol.datastructure.Node;
 import org.icev.smarttrafficcontrol.datastructure.Queue;
 import org.icev.smarttrafficcontrol.datastructure.graph.*;
+import org.icev.smarttrafficcontrol.gui.SimulatorUI;
 import org.icev.smarttrafficcontrol.model.Vehicle;
 import org.icev.smarttrafficcontrol.service.Dijkstra;
 
@@ -15,11 +16,13 @@ public class VehicleGenerator implements Serializable {
     private Graph grafo;
     private Random random;
     private int contador;
+    private SimulatorUI ui;
 
-    public VehicleGenerator(Graph grafo) {
+    public VehicleGenerator(Graph grafo, SimulatorUI ui) {
         this.grafo = grafo;
         this.random = new Random();
         this.contador = 0;
+        this.ui = ui;
     }
 
     public Vehicle gerarVeiculoComRota() {
@@ -39,6 +42,10 @@ public class VehicleGenerator implements Serializable {
 
         Vehicle veiculo = new Vehicle("V" + contador++, rota);
         System.out.println("✅ Veiculo " + veiculo.getId() + " criado com rota de " + origem.getId() + " ate " + destino.getId());
+        if (ui != null) {
+            ui.log("🚗 " + veiculo.getId() + " criado de " + origem.getId() + " para " + destino.getId());
+            ui.log("🗺️  Rota: " + veiculo.rotaComoString());
+        }
         return veiculo;
     }
 
