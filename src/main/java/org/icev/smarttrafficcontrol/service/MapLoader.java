@@ -105,24 +105,32 @@ public class MapLoader {
                     else if (e.getTarget().equals(centro)) vizinho = e.getSource();
 
                     if (vizinho != null && vizinho.getTrafficLight() != null && !usados.contains(vizinho.getId())) {
+                        TrafficLight novoSemaforo = new TrafficLight("TL_" + centro.getId() + "_" + vizinho.getId());
+                        novoSemaforo.setVinculo(vizinho);
+
                         double dx = vizinho.getLongitude() - centro.getLongitude();
                         double dy = vizinho.getLatitude() - centro.getLatitude();
                         double angle = Math.toDegrees(Math.atan2(dy, dx));
                         angle = (angle + 360) % 360;
 
-                        TrafficLight novoSemaforo = new TrafficLight("TL_" + centro.getId() + "_" + vizinho.getId());
-                        novoSemaforo.setVinculo(vizinho);
-
                         if ((angle >= 45 && angle < 135) || (angle >= 225 && angle < 315)) {
-                            grupo2.insert(novoSemaforo); // Horizontal
+                            grupo2.insert(novoSemaforo); // vias mais horizontais
                         } else {
-                            grupo1.insert(novoSemaforo); // Vertical
+                            grupo1.insert(novoSemaforo); // vias mais verticais
                         }
 
                         usados.add(vizinho.getId());
                     }
 
                     arestaAtual = arestaAtual.getNext();
+                }
+
+                while (Math.abs(grupo1.getSize() - grupo2.getSize()) > 1) {
+                    if (grupo1.getSize() > grupo2.getSize()) {
+                        grupo2.insert(grupo1.removeLast());
+                    } else {
+                        grupo1.insert(grupo2.removeLast());
+                    }
                 }
 
                 if (grupo1.isEmpty()) {
@@ -143,26 +151,6 @@ public class MapLoader {
                         " - Grupo1: " + grupo1.getSize() +
                         " | Grupo2: " + grupo2.getSize());
 
-                Set<String> idsUnicos = new HashSet<>();
-
-                Node<TrafficLight> node = grupo1.getHead();
-                while (node != null) {
-                    String id = node.getData().getId();
-                    if (!idsUnicos.add(id)) {
-                        throw new IllegalStateException("Semáforo " + id + " está em ambos os grupos!");
-                    }
-                    node = node.getNext();
-                }
-
-                node = grupo2.getHead();
-                while (node != null) {
-                    String id = node.getData().getId();
-                    if (!idsUnicos.add(id)) {
-                        throw new IllegalStateException("Semáforo " + id + " está em múltiplas interseções!");
-                    }
-                    node = node.getNext();
-                }
-
                 IntersectionController intersec = new IntersectionController(
                         "int_" + centro.getId(),
                         grupo1,
@@ -178,4 +166,5 @@ public class MapLoader {
 
         return intersecoes;
     }
+
 }

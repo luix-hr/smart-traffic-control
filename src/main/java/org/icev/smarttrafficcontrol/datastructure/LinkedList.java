@@ -149,4 +149,30 @@ public class LinkedList<T> implements Serializable {
         temp.setNext(null);
         return temp.getData();
     }
+
+    public T removeLast() {
+        if (head == null) {
+            return null;
+        }
+
+        if (head.getNext() == null) {
+            T data = head.getData();
+            head = null;
+            tail = null;
+            size--;
+            return data;
+        }
+
+        Node<T> atual = head;
+        while (atual.getNext() != null && atual.getNext().getNext() != null) {
+            atual = atual.getNext();
+        }
+
+        T data = atual.getNext().getData();
+        atual.setNext(null);
+        tail = atual;
+        size--;
+        return data;
+    }
+
 }
