@@ -34,7 +34,7 @@ public class TrafficLightController implements Serializable {
         switch (modelo) {
             case 1 -> updateFixo();
             case 2 -> updateBaseadoEmFila(filaVeiculos);
-            case 3 -> updateEconomico();
+            case 3 -> updateEconomico(filaVeiculos);
             default -> updateFixo();
         }
     }
@@ -63,12 +63,70 @@ public class TrafficLightController implements Serializable {
     }
 
     private void updateBaseadoEmFila(Queue<Vehicle> filaVeiculos) {
-        updateFixo();
+        int tamanhoFila = filaVeiculos.getSize();
+        int extraVerde = 0;
+
+        if (tamanhoFila > 3) {
+            extraVerde = 2 + (tamanhoFila - 3);
+            if (extraVerde > 6) extraVerde = 6;
+        }
+
+        int cicloVerde = config.getCicloVerde() + extraVerde;
+        int cicloAmarelo = config.getCicloAmarelo();
+
+        LinkedList<TrafficLight> grupoVerde = obterSemaforosNoVerde();
+        LinkedList<TrafficLight> grupoAmarelo = obterSemaforosNoAmarelo(intersecoes);
+        LinkedList<TrafficLight> grupoVermelho = obterSemaforosNoVermelho();
+
+        if (!amareloAtivo) {
+            if (timer >= cicloVerde) {
+                setGrupoState(grupoVerde, TrafficLight.State.YELLOW);
+                amareloAtivo = true;
+                timer = 0;
+            }
+        } else {
+            if (timer >= cicloAmarelo) {
+                setGrupoState(grupoVermelho, TrafficLight.State.GREEN);
+                setGrupoState(grupoAmarelo, TrafficLight.State.RED);
+                amareloAtivo = false;
+                timer = 0;
+            }
+        }
+
+        timer++;
     }
 
-    private void updateEconomico() {
-        updateFixo();
+
+    private void updateEconomico(Queue<Vehicle> filaVeiculos) {
+        int tamanhoFila = filaVeiculos.getSize();
+        int reduzirVermelho = (tamanhoFila > 5) ? 1 : 0;
+
+        int cicloVerde = config.getCicloVerde(); // Verde fixo
+        int cicloAmarelo = config.getCicloAmarelo();
+        int cicloVermelho = config.getCicloVerde() - reduzirVermelho;
+
+        LinkedList<TrafficLight> grupoVerde = obterSemaforosNoVerde();
+        LinkedList<TrafficLight> grupoAmarelo = obterSemaforosNoAmarelo(intersecoes);
+        LinkedList<TrafficLight> grupoVermelho = obterSemaforosNoVermelho();
+
+        if (!amareloAtivo) {
+            if (timer >= cicloVerde) {
+                setGrupoState(grupoVerde, TrafficLight.State.YELLOW);
+                amareloAtivo = true;
+                timer = 0;
+            }
+        } else {
+            if (timer >= cicloAmarelo) {
+                setGrupoState(grupoVermelho, TrafficLight.State.GREEN);
+                setGrupoState(grupoAmarelo, TrafficLight.State.RED);
+                amareloAtivo = false;
+                timer = 0;
+            }
+        }
+
+        timer++;
     }
+
 
 
     public LinkedList<TrafficLight> obterSemaforosNoVerde() {

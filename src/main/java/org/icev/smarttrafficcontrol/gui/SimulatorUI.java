@@ -90,7 +90,7 @@ public class SimulatorUI extends JFrame {
         areaVeiculos = new JTextArea();
         areaVeiculos.setEditable(false);
         JScrollPane scrollVeiculos = new JScrollPane(areaVeiculos);
-        scrollVeiculos.setPreferredSize(new Dimension(200, 200));
+        scrollVeiculos.setPreferredSize(new Dimension(200, 100));
         painelDireito.add(scrollVeiculos, BorderLayout.CENTER);
 
         add(painelDireito, BorderLayout.EAST);
@@ -98,7 +98,7 @@ public class SimulatorUI extends JFrame {
         areaLogs = new JTextArea();
         areaLogs.setEditable(false);
         JScrollPane scrollLogs = new JScrollPane(areaLogs);
-        scrollLogs.setPreferredSize(new Dimension(200, 500));
+        scrollLogs.setPreferredSize(new Dimension(200, 600));
 
         painelDireito.add(scrollLogs, BorderLayout.SOUTH);
 

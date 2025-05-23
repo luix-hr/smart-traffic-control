@@ -29,7 +29,7 @@ public class SimulationStats implements Serializable {
 
         viagens.insert(tempoViagem);
         esperas.insert(tempoEspera);
-        if (tempoEspera > 10) veiculosComEsperaAlta++;
+        if (tempoEspera > 20) veiculosComEsperaAlta++;
     }
 
     public double getIndiceCongestionamento() {
