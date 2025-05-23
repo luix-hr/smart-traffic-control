@@ -68,14 +68,14 @@ public class SimulationStats implements Serializable {
     }
 
     public void imprimirResumo(SimulatorUI ui) {
-            String resumo = "\n======== ESTATISTICAS DA SIMULACAO ========\n" +
-                    "Total de viagens concluídas: " + totalVeiculos + "\n" +
-                    "Tempo medio de viagem: " + getTempoMedioViagem() + "\n" +
-                    "Tempo medio de espera: " + getTempoMedioEspera() + "\n" +
-                    "Indice de congestionamento: " + (getIndiceCongestionamento() * 100)  + "\n" +
-                    "Consumo energetico total: " + consumoEnergetico + "\n";
+        String resumo = "\n======== ESTATISTICAS DA SIMULACAO ========\n" +
+                "Total de viagens concluídas: " + totalVeiculos + "\n" +
+                "Tempo medio de viagem: " + String.format("%.2f", getTempoMedioViagem()) + "\n" +
+                "Tempo medio de espera: " + String.format("%.2f", getTempoMedioEspera()) + "\n" +
+                "Indice de congestionamento: " + String.format("%.2f", getIndiceCongestionamento() * 100) + "\n" +
+                "Consumo energetico total: " + String.format("%.2f", consumoEnergetico) + "\n";
 
-            System.out.println(resumo);
+        System.out.println(resumo);
             if (ui != null) {
                 ui.log(resumo);
             }

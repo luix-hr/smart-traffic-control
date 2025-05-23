@@ -51,7 +51,7 @@ public class VehicleGenerator implements Serializable {
 
     public void gerarMultiplosVeiculos(int quantidade, Queue<Vehicle> filaVeiculos) {
         int tentativas = 0;
-        while (quantidade > 0 && tentativas < 10 * quantidade) {
+        while (quantidade > 0 && tentativas < 100 * quantidade) {
             Vehicle veiculo = gerarVeiculoComRota();
             if (veiculo != null) {
                 filaVeiculos.enqueue(veiculo);
